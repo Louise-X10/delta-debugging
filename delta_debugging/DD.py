@@ -603,15 +603,17 @@ class DD:
 
 
     def test_mix(self, csub, c, direction):
-        # Test the configuration CSUB.  If it fails, return FAIL and
-        # the reduced configuration.  
+        # Test the configuration CSUB.  If it fails, return FAIL.
+        # Goal: minimize the difference by reducing the failing test case.
         if self.minimize:
+            # print("Minimization on ", self.coerce(csub))
             (t, csub) = self.test_and_resolve(csub, [], c, direction)
             if t == self.FAIL:
                 return (t, csub)
 
-        # Test the complement of the configuration CSUB.  If it passes,
-        # return FAIL and the reduced configuration.
+        # Test the complement of CSUB.  If it passes, return FAIL.
+        # Goal: minimize the difference only by extending the passing test case.
+        # If complement passes, then failure must be in original. 
         if self.maximize:
             csubbar = self.__listminus(self.CC, csub)
             cbar    = self.__listminus(self.CC, c)
@@ -619,10 +621,9 @@ class DD:
                 directionbar = self.REMOVE
             else:
                 directionbar = self.ADD
-
+            # print("Maximization on ", self.coerce(csubbar))
             (tbar, csubbar) = self.test_and_resolve(csubbar, [], cbar,
                                                     directionbar)
-
             csub = self.__listminus(self.CC, csubbar)
 
             if tbar == self.PASS:
