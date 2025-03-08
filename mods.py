@@ -54,6 +54,8 @@ def apply_remove(deltas, removed):
     for start_idx, chars in removed:
         for i in range(len(chars)):  # Remove each character from the given start index
             if start_idx + i in delta_dict:
+                # Check the deleted char is the one speficied by removed
+                assert delta_dict[start_idx + i] == chars[i]
                 del delta_dict[start_idx + i]
     deltas = sorted(delta_dict.items())
     return deltas
