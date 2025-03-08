@@ -94,16 +94,15 @@ class DDMods(DD):
     
     def __modsminus(self, mods, submods):
         """Return a list of all elements of mods that are not in submods."""
-        #! TODO
         s2 = {}
-        for delta in c2:
+        for delta in submods:
             s2[delta] = 1
         
         c = []
-        for delta in c1:
+        for delta in mods:
             if delta not in s2:
                 c.append(delta)
-        return c1
+        return c
     
     def __split_mods(self, mods):
         prepend = []
