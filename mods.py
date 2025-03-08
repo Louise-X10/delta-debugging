@@ -12,27 +12,23 @@ def get_mods(string1, string2):
         # Check fore insertion before first match
         if i == 0 and block.b > 0:
             insert_str = string2[:block.b]
-            mods.append((-1, insert_str, mydd.ADD))
+            for char in insert_str:
+                mods.append((-1, char, mydd.ADD))
         # Check for insertions between matches
         if i < len(matching_blocks) - 1:
             next_block = matching_blocks[i + 1]
             insert_str = string2[(block.b+1):next_block.b]
-            mods.append((block.a, insert_str, mydd.ADD))
+            for char in insert_str:
+                mods.append((block.a, char, mydd.ADD))
 
     diff = list(difflib.ndiff(string1, string2))
-    index = 0
-    remove = []
-    remove_idx = -1
+    remove_idx = 0
     for d in diff:
         if d.startswith("- "):  # Removed character
-            if remove == []:
-                remove_idx = index
-            remove.append(d[2])
-        elif remove != []:
-            mods.append((remove_idx, "".join(remove), mydd.REMOVE))
-            remove = []
-        if d.startswith(" "): # Not removed character
-            index += 1
+            mods.append((remove_idx, d[2], mydd.REMOVE))
+            remove_idx += 1
+        elif d.startswith(" "): # Not removed character
+            remove_idx += 1
 
     return mods
 
@@ -71,9 +67,8 @@ def apply_insert(deltas, inserted):
     return deltas
 
 def apply_prepend(deltas, prepend):
-    if prepend:
-        before_idx, chars = prepend[0]  # Always inserting before the first element
-        deltas = [(i, char) for i, char in enumerate(chars)] + deltas
+    prepend_chars = [(-1, entry[1]) for entry in prepend]
+    deltas = prepend_chars + deltas
     return deltas
 
 def apply_mods(deltas, mods):

@@ -1,6 +1,5 @@
 import string
-from DD import DD
-from mods import *
+from delta_debugging.DD import DD
 import difflib
   
 
@@ -20,7 +19,43 @@ class DDMods(DD):
         self.verbose = 0
 
     # Get list of modifications to change string1 into string2
-    def get_mods(self, string1, string2):   
+    # def get_mods(self, string1, string2):   
+    #     mods = []
+    #     s = difflib.SequenceMatcher()
+    #     s.set_seqs(string1, string2)
+    #     matching_blocks = s.get_matching_blocks()
+
+    #     # Traverse the matching blocks and identify insertions
+    #     for i, block in enumerate(matching_blocks):
+    #         # Check fore insertion before first match
+    #         if i == 0 and block.b > 0:
+    #             insert_str = string2[:block.b]
+    #             mods.append((-1, insert_str, self.ADD))
+    #         # Check for insertions between matches
+    #         if i < len(matching_blocks) - 1:
+    #             next_block = matching_blocks[i + 1]
+    #             insert_str = string2[(block.b+1):next_block.b]
+    #             mods.append((block.a, insert_str, self.ADD))
+
+    #     diff = list(difflib.ndiff(string1, string2))
+    #     index = 0
+    #     remove = []
+    #     remove_idx = -1
+    #     for d in diff:
+    #         if d.startswith("- "):  # Removed character
+    #             if remove == []:
+    #                 remove_idx = index
+    #             remove.append(d[2])
+    #         elif remove != []:
+    #             mods.append((remove_idx, "".join(remove), self.REMOVE))
+    #             remove = []
+    #         if d.startswith(" "): # Not removed character
+    #             index += 1
+
+    #     return mods
+
+    def get_mods(self, string1, string2):
+    # Get list of modifications to change string1 into string2
         mods = []
         s = difflib.SequenceMatcher()
         s.set_seqs(string1, string2)
@@ -31,27 +66,23 @@ class DDMods(DD):
             # Check fore insertion before first match
             if i == 0 and block.b > 0:
                 insert_str = string2[:block.b]
-                mods.append((-1, insert_str, self.ADD))
+                for char in insert_str:
+                    mods.append((-1, char, self.ADD))
             # Check for insertions between matches
             if i < len(matching_blocks) - 1:
                 next_block = matching_blocks[i + 1]
                 insert_str = string2[(block.b+1):next_block.b]
-                mods.append((block.a, insert_str, self.ADD))
+                for char in insert_str:
+                    mods.append((block.a, char, self.ADD))
 
         diff = list(difflib.ndiff(string1, string2))
-        index = 0
-        remove = []
-        remove_idx = -1
+        remove_idx = 0
         for d in diff:
             if d.startswith("- "):  # Removed character
-                if remove == []:
-                    remove_idx = index
-                remove.append(d[2])
-            elif remove != []:
-                mods.append((remove_idx, "".join(remove), self.REMOVE))
-                remove = []
-            if d.startswith(" "): # Not removed character
-                index += 1
+                mods.append((remove_idx, d[2], self.REMOVE))
+                remove_idx += 1
+            elif d.startswith(" "): # Not removed character
+                remove_idx += 1
 
         return mods
 
@@ -109,9 +140,8 @@ class DDMods(DD):
         return deltas
 
     def __apply_prepend(self, deltas, prepend):
-        if prepend:
-            before_idx, chars = prepend[0]  # Always inserting before the first element
-            deltas = [(i, char) for i, char in enumerate(chars)] + deltas
+        prepend_chars = [(-1, entry[1]) for entry in prepend]
+        deltas = prepend_chars + deltas
         return deltas
 
     def __apply_mods(self, deltas, mods):
@@ -299,7 +329,7 @@ class DDMods(DD):
 if __name__ == '__main__':
     
     # Define our own DD class, with its own test method
-    class MyDD(DD):        
+    class MyDD(DDMods):        
         def _test_a(self, c):
             "Test the configuration C.  Return PASS, FAIL, or UNRESOLVED."
 
