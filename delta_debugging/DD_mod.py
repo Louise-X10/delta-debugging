@@ -44,6 +44,7 @@
 
 
 import string
+from mods import *
 
 # Start with some helpers.
 class OutcomeCache:
@@ -265,22 +266,10 @@ class DD:
 
         return c
 
-    def __listmodify(self, c1, c2):
-        """Return the modification of C1 according to C2."""
-        s1 = {}
-        for delta in c1:
-            s1[delta] = 1
-
-        c = c1[:]
-        for delta in c2:
-            if delta not in s1 and delta[-1] == self.ADD:
-                s1[delta] = 1
-                c.append(delta[:2])
-            elif delta in s1 and delta[-1] == self.REMOVE:
-                s1[delta] -= 1
-                c.remove(delta[:2])
-
-        return c
+    def __listapply(self, c1, c2):
+        """Apply modification of c2 onto c1."""
+        c1 = apply_mods(c1, c2)
+        return c1
 
     def __listsubseteq(self, c1, c2):
         """Return 1 if C1 is a subset or equal to C2."""
