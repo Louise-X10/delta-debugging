@@ -266,11 +266,6 @@ class DD:
 
         return c
 
-    def __listapply(self, c1, c2):
-        """Apply modification of c2 onto c1."""
-        c1 = apply_mods(c1, c2)
-        return c1
-
     def __listsubseteq(self, c1, c2):
         """Return 1 if C1 is a subset or equal to C2."""
         s2 = {}
@@ -282,6 +277,24 @@ class DD:
                 return 0
 
         return 1
+    
+    def __modsapply(self, c1, mods):
+        """Apply modification of mods onto c1."""
+        c1 = apply_mods(c1, mods)
+        return c1
+    
+    def __modsminus(self, mods, submods):
+        """Return a list of all elements of mods that are not in submods."""
+        #! TODO
+        s2 = {}
+        for delta in c2:
+            s2[delta] = 1
+        
+        c = []
+        for delta in c1:
+            if delta not in s2:
+                c.append(delta)
+        return c1
 
     # Output
     def coerce(self, c):
@@ -448,6 +461,52 @@ class DD:
         # assert t == self.PASS or t == self.FAIL
         csub = self.__listminus(csubr, r)
         return t, csub
+
+     # Test with fixes
+    
+    # Test mods (fixes not imlemented yet)
+    def test_mods_and_resolve(self, csub, r, c, direction):
+        """Repeat testing 'modify CSUB with R' while unresolved."""
+
+        initial_csub = csub[:]
+        # c2 = self.__listunion(r, c)
+
+        csubr = self.__modsapply(csub, r)
+        t = self.test(csubr)
+
+        # necessary to use more resolving mechanisms which can reverse each
+        # other, can (but needn't) be used in subclasses
+        # self._resolve_type = 0 
+
+        # while t == self.UNRESOLVED:
+        #     self.__resolving = 1
+        #     csubr = self.resolve(csubr, c, direction)
+
+        #     if csubr is None:
+        #         # Nothing left to resolve
+        #         break
+            
+        #     if len(csubr) >= len(c2):
+        #         # Added everything: csub == c2. ("Upper" Baseline)
+        #         # This has already been tested.
+        #         csubr = None
+        #         break
+                
+        #     if len(csubr) <= len(r):
+        #         # Removed everything: csub == r. (Baseline)
+        #         # This has already been tested.
+        #         csubr = None
+        #         break
+            
+        #     t = self.test(csubr)
+
+        # self.__resolving = 0
+        if csubr is None:
+            return self.UNRESOLVED, initial_csub
+
+        # assert t == self.PASS or t == self.FAIL
+        # csub = self.__listminus(csubr, r)
+        return t, csubr
 
     # Inquiries
     def resolving(self):
@@ -922,15 +981,26 @@ class DD:
             n   = next_n
             run = run + 1
 
-    
-    # c1 = passing
-    # c2 = failing
-    def _dddiff_max(self, c1, c2, n):
-        run = 1
-        cbar_offset = 0
+    # Delta debugging with list of modifications from c1 (failing) to c2 (passing)
+    def dddiff_mods(self, c1, c2, mods):
+        n = 2
 
-        c1_orig = c1[:]
-        c2_orig = c2[:]
+        if self.debug_dd:
+            print("dddiff(" + self.pretty(c) + ", " + n + ")...")
+
+        outcome = self._dddiff_mods(c1, c2, mods, n)
+
+        if self.debug_dd:
+            print("dddiff(" + self.pretty(c) + ", " + n + ") = " +
+                   outcome)
+
+        return outcome
+    
+    # c1 = failing
+    # c2 = passing
+    # c = list of mods from c1 to c2
+    def _dddiff_mods(self, c1, c2, mods, n):
+        run = 1
 
         # We replace the tail recursion from the paper by a loop
         while 1:
@@ -939,18 +1009,20 @@ class DD:
                 print("dd: c2 =", self.pretty(c2))
 
             if self.assume_axioms_hold:
-                t1 = self.PASS
-                t2 = self.FAIL
+                t1 = self.FAIL
+                t2 = self.PASS
             else:
                 t1 = self.test(c1)
                 t2 = self.test(c2)
             
-            assert t1 == self.PASS
-            assert t2 == self.FAIL
+            assert t1 == self.FAIL
+            assert t2 == self.PASS
             # assert self.__listsubseteq(c1, c2)
 
             # c = self.__listminus(c2, c1)
-            c = self.__listunion(c2, c1)
+            # c = self.__listunion(c2, c1)
+            ##* List of deltas is list of mods
+            c = mods
 
             if self.debug_dd:
                 print("dd: c2 - c1 =", self.pretty(c))
@@ -977,84 +1049,46 @@ class DD:
             progress = 0
 
             next_c1 = c1[:]
-            next_c2 = c2[:]
+            next_mods = c[:]
             next_n = n
 
             # Check subsets
             for j in range(n):
-                i = (j + cbar_offset) % n
+                i = j % n
 
                 if self.debug_dd:
                     print("dd: trying", self.pretty(cs[i]))
 
-                (t, csub) = self.test_and_resolve(cs[i], c1, c, self.REMOVE)
-                csub = self.__listunion(c1, csub)
+                (t, csub) = self.test_mods_and_resolve(c1, cs[i], c2, self.REMOVE)
+                # csub = self.__listunion(c1, csub)
 
-                if t == self.FAIL and t1 == self.PASS:
+                if t == self.FAIL:
                     # Found
                     progress    = 1
                     ##* Change lower bound to new failing test case
                     next_c1     = csub
+                    next_mods   = self.__modsminus(c, cs[i])
                     next_n      = 2
-                    cbar_offset = 0
-
-                    if self.debug_dd:
-                        print("dd: reduce c2 to", len(next_c2), "deltas:",)
-                        print(self.pretty(next_c2))
-                    break
-
-                if t == self.PASS and t2 == self.FAIL:
-                    # Reduce to complement
-                    progress    = 1
-                    next_c1     = csub
-                    next_n      = max(next_n - 1, 2)
-                    cbar_offset = i
 
                     if self.debug_dd:
                         print("dd: increase c1 to", len(next_c1), "deltas:",)
-                        print(self.pretty(next_c1))
+                        print(self.pretty(next_mods))
                     break
-
-
-                csub = self.__listminus(c, cs[i])
-                (t, csub) = self.test_and_resolve(csub, c1, c, self.ADD)
-                csub = self.__listunion(c1, csub)
-
-                if t == self.PASS and t2 == self.FAIL:
-                    # Found
-                    progress    = 1
-                    next_c1     = csub
-                    next_n      = 2
-                    cbar_offset = 0
-
-                    if self.debug_dd:
-                        print("dd: increase c1 to", len(next_c1), "deltas:",)
-                        print(self.pretty(next_c1))
-                    break
-
-                if t == self.FAIL and t1 == self.PASS:
-                    # Increase
-                    progress    = 1
-                    next_c2     = csub
-                    next_n      = max(next_n - 1, 2)
-                    cbar_offset = i
-
-                    if self.debug_dd:
-                        print("dd: reduce c2 to", len(next_c2), "deltas:",)
-                        print(self.pretty(next_c2))
-                    break
+                elif t == self.PASS:
+                    # Not found
+                    progress    = 0
 
             if progress:
-                if self.animate is not None:
-                    self.animate.write_outcome(
-                        self.__listminus(next_c1, c1_orig), self.PASS)
-                    self.animate.write_outcome(
-                        self.__listminus(c2_orig, next_c2), self.FAIL)
-                    self.animate.write_outcome(
-                        self.__listminus(next_c2, next_c1), self.DIFFERENCE)
-                    self.animate.next_frame()
+                # if self.animate is not None:
+                #     self.animate.write_outcome(
+                #         self.__listminus(next_c1, c1_orig), self.PASS)
+                #     self.animate.write_outcome(
+                #         self.__listminus(c2_orig, next_c2), self.FAIL)
+                #     self.animate.write_outcome(
+                #         self.__listminus(next_c2, next_c1), self.DIFFERENCE)
+                #     self.animate.next_frame()
 
-                self.report_progress(self.__listminus(next_c2, next_c1), "dd")
+                self.report_progress(next_mods, "dd")
             else:
                 if n >= len(c):
                     # No further minimizing
@@ -1065,11 +1099,10 @@ class DD:
                 next_n = min(len(c), n * 2)
                 if self.verbose:
                     print("dd: increase granularity to", next_n)
-                cbar_offset = (cbar_offset * next_n) / n
 
             c1  = next_c1
-            c2  = next_c2
             n   = next_n
+            c   = next_mods
             run = run + 1
 
     def dd(self, c):
