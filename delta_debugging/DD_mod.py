@@ -1,7 +1,7 @@
 import string
 from DD import DD
 from mods import *
-
+import difflib
   
 
 # Main Delta Debugging algorithm.
@@ -19,10 +19,46 @@ class DDMods(DD):
         self.debug_dd = 0
         self.verbose = 0
 
+    # Get list of modifications to change string1 into string2
+    def get_mods(self, string1, string2):   
+        mods = []
+        s = difflib.SequenceMatcher()
+        s.set_seqs(string1, string2)
+        matching_blocks = s.get_matching_blocks()
+
+        # Traverse the matching blocks and identify insertions
+        for i, block in enumerate(matching_blocks):
+            # Check fore insertion before first match
+            if i == 0 and block.b > 0:
+                insert_str = string2[:block.b]
+                mods.append((-1, insert_str, self.ADD))
+            # Check for insertions between matches
+            if i < len(matching_blocks) - 1:
+                next_block = matching_blocks[i + 1]
+                insert_str = string2[(block.b+1):next_block.b]
+                mods.append((block.a, insert_str, self.ADD))
+
+        diff = list(difflib.ndiff(string1, string2))
+        index = 0
+        remove = []
+        remove_idx = -1
+        for d in diff:
+            if d.startswith("- "):  # Removed character
+                if remove == []:
+                    remove_idx = index
+                remove.append(d[2])
+            elif remove != []:
+                mods.append((remove_idx, "".join(remove), self.REMOVE))
+                remove = []
+            if d.startswith(" "): # Not removed character
+                index += 1
+
+        return mods
+
     # Helpers
     def __modsapply(self, c1, mods):
         """Apply modification of mods onto c1."""
-        c1 = apply_mods(c1, mods)
+        c1 = self.__apply_mods(c1, mods)
         return c1
     
     def __modsminus(self, mods, submods):
@@ -37,6 +73,55 @@ class DDMods(DD):
             if delta not in s2:
                 c.append(delta)
         return c1
+    
+    def __split_mods(self, mods):
+        prepend = []
+        inserted = []
+        removed = []
+        for pos, char, op in mods:
+            if pos == -1:
+                prepend.append((pos, char))  # Collect elements with index -1
+            elif op == self.ADD:
+                inserted.append((pos, char))
+            elif op == self.REMOVE:
+                removed.append((pos, char))
+        return prepend, inserted, removed
+
+    def __apply_remove(self, deltas, removed):
+        delta_dict = {idx: char for idx, char in deltas}
+        for start_idx, chars in removed:
+            for i in range(len(chars)):  # Remove each character from the given start index
+                if start_idx + i in delta_dict:
+                    # Check the deleted char is the one speficied by removed
+                    assert delta_dict[start_idx + i] == chars[i]
+                    del delta_dict[start_idx + i]
+        deltas = sorted(delta_dict.items())
+        return deltas
+
+    def __apply_insert(self, deltas, inserted):
+        for insert_idx, chars in inserted:
+            # Find the index in new_deltas where to insert
+            for i, (idx, _) in enumerate(deltas):
+                if idx == insert_idx:
+                    for char in chars:
+                        deltas.insert(i + 1, (None, char))  # Use None as a placeholder index
+                    break
+        return deltas
+
+    def __apply_prepend(self, deltas, prepend):
+        if prepend:
+            before_idx, chars = prepend[0]  # Always inserting before the first element
+            deltas = [(i, char) for i, char in enumerate(chars)] + deltas
+        return deltas
+
+    def __apply_mods(self, deltas, mods):
+        prepend, inserted, removed = self.__split_mods(mods)
+        deltas = self.__apply_remove(deltas, removed)
+        deltas = self.__apply_insert(deltas, inserted)
+        deltas = self.__apply_prepend(deltas, prepend)
+        deltas = [(i, char) for i, (_, char) in enumerate(deltas)]
+        return deltas
+
 
     # Test mods (fixes not imlemented yet)
     def test_mods_and_resolve(self, csub, r, c, direction):
