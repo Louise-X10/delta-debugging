@@ -160,6 +160,7 @@ class DDMods(DD):
         return deltas
 
     def __apply_mods(self, deltas, mods):
+        deltas = deltas.copy()
         prepend, inserted, removed = self.__split_mods(mods)
         # deltas = self.__apply_remove(deltas, removed)
         deltas = self.__apply_insert(deltas, inserted)
