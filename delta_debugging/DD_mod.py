@@ -216,13 +216,13 @@ class DDMods(DD):
         n = 2
 
         if self.debug_dd:
-            print("dddiff(" + self.pretty(c) + ", " + n + ")...")
+            print("dddiff(" + self.pretty(c1) + ", " + str(n) + ")...")
 
         outcome = self._dddiff_mods(c1, c2, mods, n)
 
         if self.debug_dd:
-            print("dddiff(" + self.pretty(c) + ", " + n + ") = " +
-                   outcome)
+            print("dddiff(" + self.pretty(c1) + ", " + str(n) + ") = " +
+                  outcome)
 
         return outcome
     
@@ -269,7 +269,7 @@ class DDMods(DD):
 
             if self.verbose:
                 print()
-                print("dd (run #" + run + "): trying",)
+                print("dd (run #" + str(run) + "): trying",)
                 for i in range(n):
                     if i > 0:
                         print("+",)
