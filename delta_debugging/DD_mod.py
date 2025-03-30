@@ -65,35 +65,27 @@ class DDMods(DD):
         # c.sort()
         return self.coerce(c)
 
+    # * Modifications
+    # Addition: the index after which to insert
+    # Removal: the index of the character to remove
     def get_mods(self, string1, string2):
     # Get list of modifications to change string1 into string2
-        mods = []
-        s = difflib.SequenceMatcher()
-        s.set_seqs(string1, string2)
-        matching_blocks = s.get_matching_blocks()
-
-        # Traverse the matching blocks and identify insertions
-        for i, block in enumerate(matching_blocks):
-            # Check fore insertion before first match
-            if i == 0 and block.b > 0:
-                insert_str = string2[:block.b]
-                for char in insert_str:
-                    mods.append((-1, char, self.ADD))
-            # Check for insertions between matches
-            if i < len(matching_blocks) - 1:
-                next_block = matching_blocks[i + 1]
-                insert_str = string2[(block.b+1):next_block.b]
-                for char in insert_str:
-                    mods.append((block.a, char, self.ADD))
-
         diff = list(difflib.ndiff(string1, string2))
-        remove_idx = 0
+        mods = []
+        idx = -1
         for d in diff:
-            if d.startswith("- "):  # Removed character
-                mods.append((remove_idx, d[2], self.REMOVE))
-                remove_idx += 1
-            elif d.startswith(" "): # Not removed character
-                remove_idx += 1
+            if d.startswith("  "):  # Matched character
+                idx += 1
+                prepend = False
+            elif d.startswith("+ "):  # Added character
+                mods.append((idx, d[2], self.ADD))
+            # elif d.startswith("? "):  # Changed character
+            #     mods.append((idx, d[2], self.CHANGE))
+            elif d.startswith("- "):  # Removed character
+                idx += 1
+                mods.append((idx, d[2], self.REMOVE))
+
+        # * Modify prepend indices
         prepend = [mod for mod in mods if mod[0] < 0]
         plen = len(prepend)
         prepend = [(-plen + i, val, op)
