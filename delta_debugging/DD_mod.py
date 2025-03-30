@@ -137,12 +137,20 @@ class DDMods(DD):
         return deltas
 
     def __apply_insert(self, deltas, inserted):
-        for insert_idx, chars in inserted:
-            # Find the index in new_deltas where to insert
+        # Build dictionary to store insertions at the same index
+        insertions = {}
+        for insert_idx, char in inserted:
+            if insert_idx in insertions:
+                insertions[insert_idx].append(char)
+            else:
+                insertions[insert_idx] = [char]
+        # Sort the insertions by index in reverse order
+        for insert_idx in sorted(insertions.keys(), reverse=True):
+            chars = insertions[insert_idx]
             for i, (idx, _) in enumerate(deltas):
                 if idx == insert_idx:
-                    for char in chars:
-                        deltas.insert(i + 1, (None, char))  # Use None as a placeholder index
+                    for char in reversed(chars):  # Preserve order of insertions
+                        deltas.insert(i + 1, (None, char))
                     break
         return deltas
 
