@@ -54,6 +54,17 @@ class DDMods(DD):
 
     #     return mods
 
+    def coerce(self, c):
+        """Return the configuration C as a compact string"""
+        # Default: use printable representation
+        return "".join([x[1] for x in c])
+
+    def pretty(self, c):
+        """Like coerce(), but sort beforehand"""
+        # sorted_c = c[:]
+        # c.sort()
+        return self.coerce(c)
+
     def get_mods(self, string1, string2):
     # Get list of modifications to change string1 into string2
         mods = []
@@ -97,13 +108,13 @@ class DDMods(DD):
         s2 = {}
         for delta in submods:
             s2[delta] = 1
-        
+
         c = []
         for delta in mods:
             if delta not in s2:
                 c.append(delta)
         return c
-    
+
     def __split_mods(self, mods):
         prepend = []
         inserted = []
