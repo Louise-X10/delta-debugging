@@ -12,7 +12,6 @@ class DDMods(DD):
     # - `ddmin()' which computes a minimal failure-inducing configuration, and
     # - `dd()' which computes a minimal failure-inducing difference.
    
-
     def __init__(self):
         DD.__init__(self)
         self.debug_dd = 0
@@ -172,7 +171,7 @@ class DDMods(DD):
     def __apply_mods(self, deltas, mods):
         deltas = deltas.copy()
         prepend, inserted, removed = self.__split_mods(mods)
-        # deltas = self.__apply_remove(deltas, removed)
+        deltas = self.__apply_remove(deltas, removed)
         deltas = self.__apply_insert(deltas, inserted)
         deltas = self.__apply_prepend(deltas, prepend)
         # deltas = [(i, char) for i, (_, char) in enumerate(deltas)]
@@ -189,8 +188,8 @@ class DDMods(DD):
         csubr = self.__modsapply(csub, r)
         t = self.test(csubr)
 
-        # necessary to use more resolving mechanisms which can reverse each
-        # other, can (but needn't) be used in subclasses
+        # # necessary to use more resolving mechanisms which can reverse each
+        # # other, can (but needn't) be used in subclasses
         # self._resolve_type = 0 
 
         # while t == self.UNRESOLVED:
@@ -300,16 +299,17 @@ class DDMods(DD):
                 if self.debug_dd:
                     print("dd: trying", self.pretty(cs[i]))
 
-                (t, csub) = self.test_mods_and_resolve(c1, cs[i], c2, self.REMOVE)
+                (t, csub) = self.test_mods_and_resolve(
+                    c1, cs[i], c2, self.REMOVE)
                 # csub = self.__listunion(c1, csub)
 
                 if t == self.FAIL:
                     # Found
-                    progress    = 1
-                    ##* Change lower bound to new failing test case
-                    next_c1     = csub
-                    next_mods   = self.__modsminus(c, cs[i])
-                    next_n      = 2
+                    progress = 1
+                    # * Change lower bound to new failing test case
+                    next_c1 = csub
+                    next_mods = self.__modsminus(c, cs[i])
+                    next_n = 2
 
                     if self.debug_dd:
                         print("dd: increase c1 to", len(next_c1), "deltas:",)
@@ -317,7 +317,7 @@ class DDMods(DD):
                     break
                 elif t == self.PASS:
                     # Not found
-                    progress    = 0
+                    progress = 0
 
             if progress:
                 # if self.animate is not None:
@@ -341,14 +341,13 @@ class DDMods(DD):
                 if self.verbose:
                     print("dd: increase granularity to", next_n)
 
-            c1  = next_c1
-            n   = next_n
-            c   = next_mods
+            c1 = next_c1
+            n = next_n
+            c = next_mods
             run = run + 1
 
     def dd(self, c):
         return self.dddiff(c)           # Backwards compatibility
-
 
 
 if __name__ == '__main__':
@@ -452,19 +451,19 @@ if __name__ == '__main__':
     # mydd.cache_outcomes = 0
     # mydd.monotony = 0
 
-    #print("Minimizing failure-inducing input...")
-    #list = range(1, 9)
-    #for i in range (1, 255):
+    # print("Minimizing failure-inducing input...")
+    # list = range(1, 9)
+    # for i in range (1, 255):
     #    list.append(i)
 
-    #c = mydd.ddmax(list)
-    #print("The 1-minimal failure-inducing input is", c)
-    #print("Removing any element will make the failure go away.")
-    #print()
+    # c = mydd.ddmax(list)
+    # print("The 1-minimal failure-inducing input is", c)
+    # print("Removing any element will make the failure go away.")
+    # print()
     
-    list = ["A King there was in days of old,",\
-            "ere Men yet walked upon the mould.",\
-            "There Juliet and her Romeo,",\
+    list = ["A King there was in days of old,",
+            "ere Men yet walked upon the mould.",
+            "There Juliet and her Romeo,",
             "beneath the stars sat."]
     print("Computing the failure-inducing difference...")
     (c, c1, c2) = mydd.dd(list)        # Invoke DD
