@@ -231,6 +231,7 @@ class DDMods(DD):
     # c = list of mods from c1 to c2
     def _dddiff_mods(self, c1, c2, mods, n):
         run = 1
+        c = mods  # * List of deltas is list of mods
 
         # We replace the tail recursion from the paper by a loop
         while 1:
@@ -251,8 +252,6 @@ class DDMods(DD):
 
             # c = self.__listminus(c2, c1)
             # c = self.__listunion(c2, c1)
-            ##* List of deltas is list of mods
-            c = mods
 
             if self.debug_dd:
                 print("dd: c2 - c1 =", self.pretty(c))
