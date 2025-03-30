@@ -1,7 +1,7 @@
 import string
 from delta_debugging.DD import DD
 import difflib
-  
+
 
 # Main Delta Debugging algorithm.
 class DDMods(DD):
@@ -11,47 +11,11 @@ class DDMods(DD):
     # Main entry points are:
     # - `ddmin()' which computes a minimal failure-inducing configuration, and
     # - `dd()' which computes a minimal failure-inducing difference.
-   
+
     def __init__(self):
         DD.__init__(self)
         self.debug_dd = 0
         self.verbose = 0
-
-    # Get list of modifications to change string1 into string2
-    # def get_mods(self, string1, string2):   
-    #     mods = []
-    #     s = difflib.SequenceMatcher()
-    #     s.set_seqs(string1, string2)
-    #     matching_blocks = s.get_matching_blocks()
-
-    #     # Traverse the matching blocks and identify insertions
-    #     for i, block in enumerate(matching_blocks):
-    #         # Check fore insertion before first match
-    #         if i == 0 and block.b > 0:
-    #             insert_str = string2[:block.b]
-    #             mods.append((-1, insert_str, self.ADD))
-    #         # Check for insertions between matches
-    #         if i < len(matching_blocks) - 1:
-    #             next_block = matching_blocks[i + 1]
-    #             insert_str = string2[(block.b+1):next_block.b]
-    #             mods.append((block.a, insert_str, self.ADD))
-
-    #     diff = list(difflib.ndiff(string1, string2))
-    #     index = 0
-    #     remove = []
-    #     remove_idx = -1
-    #     for d in diff:
-    #         if d.startswith("- "):  # Removed character
-    #             if remove == []:
-    #                 remove_idx = index
-    #             remove.append(d[2])
-    #         elif remove != []:
-    #             mods.append((remove_idx, "".join(remove), self.REMOVE))
-    #             remove = []
-    #         if d.startswith(" "): # Not removed character
-    #             index += 1
-
-    #     return mods
 
     def coerce(self, c):
         """Return the configuration C as a compact string"""
@@ -64,11 +28,20 @@ class DDMods(DD):
         # c.sort()
         return self.coerce(c)
 
+    # * String to Delta helpers
+    def str_to_deltas(self, test_input):
+        deltas = list(
+            map(lambda x: (x, test_input[x]), range(len(test_input))))
+        return deltas
+
+    def deltas_to_str(self, deltas):
+        return "".join([x[1] for x in deltas])
+
     # * Modifications
     # Addition: the index after which to insert
     # Removal: the index of the character to remove
     def get_mods(self, string1, string2):
-    # Get list of modifications to change string1 into string2
+        # Get list of modifications to change string1 into string2
         diff = list(difflib.ndiff(string1, string2))
         mods = []
         idx = -1
@@ -93,12 +66,12 @@ class DDMods(DD):
         mods[:plen] = prepend
         return mods
 
-    # Helpers
+    # * Mod Helpers
     def __modsapply(self, c1, mods):
         """Apply modification of mods onto c1."""
         c1 = self.__apply_mods(c1, mods)
         return c1
-    
+
     def __modsminus(self, mods, submods):
         """Return a list of all elements of mods that are not in submods."""
         count = {}
@@ -178,8 +151,19 @@ class DDMods(DD):
         # deltas = [(i, char) for i, (_, char) in enumerate(deltas)]
         return deltas
 
+    # TODO: Resolve
+    # csub = unresolved input
+    # c = valid input
 
-    # Test mods (fixes not imlemented yet)
+    def _resolve(self, csub, c, direction):
+        """Stub to overload in subclasses."""
+        # By default, no way to resolve
+        return None
+
+    # * Test mods
+    # csub = c1 = failing input
+    # r = mods = modifications towards valid input
+    # c = c2 = valid input
     def test_mods_and_resolve(self, csub, r, c, direction):
         """Repeat testing 'modify CSUB with R' while unresolved."""
 
@@ -191,7 +175,7 @@ class DDMods(DD):
 
         # # necessary to use more resolving mechanisms which can reverse each
         # # other, can (but needn't) be used in subclasses
-        # self._resolve_type = 0 
+        # self._resolve_type = 0
 
         # while t == self.UNRESOLVED:
         #     self.__resolving = 1
@@ -200,19 +184,19 @@ class DDMods(DD):
         #     if csubr is None:
         #         # Nothing left to resolve
         #         break
-            
+
         #     if len(csubr) >= len(c2):
         #         # Added everything: csub == c2. ("Upper" Baseline)
         #         # This has already been tested.
         #         csubr = None
         #         break
-                
+
         #     if len(csubr) <= len(r):
         #         # Removed everything: csub == r. (Baseline)
         #         # This has already been tested.
         #         csubr = None
         #         break
-            
+
         #     t = self.test(csubr)
 
         # self.__resolving = 0
@@ -223,7 +207,34 @@ class DDMods(DD):
         # csub = self.__listminus(csubr, r)
         return t, csubr
 
-    # Delta debugging with list of modifications from c1 (failing) to c2 (passing)
+    # * Delta debugging for string1 (failing) and string2 (passing)
+    def ddiff_max(self, string1, string2):
+        if self.verbose:
+            print("Computing min failure input of ", string1)
+        deltas = list(map(lambda x: (x, string1[x]), range(len(string1))))
+        c = self.ddmin(deltas)              # Invoke DDMIN
+        minimal = "".join([x[1] for x in c])
+        if self.verbose:
+            print("The minimal failure of ", string1, " is ", minimal)
+
+        string1 = minimal
+        mods = self.get_mods(string1, string2)
+        c1 = self.str_to_deltas(string1)
+        c2 = self.str_to_deltas(string2)
+        c = mods
+        if self.verbose:
+            print("Modifying failure input ", self.pretty(
+                c1), " towards ", self.pretty(c2))
+
+        (c, c1, c2) = self.dddiff_mods(c1, c2, mods[:6])
+        if self.verbose:
+            print("The minimally different failure to ", self.pretty(
+                c2), " is ", self.pretty(c1))
+            print("The difference is ", c)
+        return (c, c1, c2)
+
+    # * Delta debugging with list of modifications from c1 (min failing) to c2 (passing)
+
     def dddiff_mods(self, c1, c2, mods):
         n = 2
 
@@ -237,7 +248,7 @@ class DDMods(DD):
                   outcome)
 
         return outcome
-    
+
     # c1 = failing
     # c2 = passing
     # c = list of mods from c1 to c2
@@ -257,7 +268,7 @@ class DDMods(DD):
             else:
                 t1 = self.test(c1)
                 t2 = self.test(c2)
-            
+
             assert t1 == self.FAIL
             assert t2 == self.PASS
             # assert self.__listsubseteq(c1, c2)
@@ -352,9 +363,9 @@ class DDMods(DD):
 
 
 if __name__ == '__main__':
-    
+
     # Define our own DD class, with its own test method
-    class MyDD(DDMods):        
+    class MyDD(DDMods):
         def _test_a(self, c):
             "Test the configuration C.  Return PASS, FAIL, or UNRESOLVED."
 
@@ -373,7 +384,7 @@ if __name__ == '__main__':
             if c == []:
                 return self.PASS
             if 1 in c and 2 in c and 3 in c and 4 in c and \
-                5 in c and 6 in c and 7 in c and 8 in c:
+                    5 in c and 6 in c and 7 in c and 8 in c:
                 return self.FAIL
             return self.UNRESOLVED
 
@@ -381,13 +392,13 @@ if __name__ == '__main__':
             result = 1000
 
             if 1 in c and 2 in c and 3 in c and 4 in c and \
-                6 in c and 8 in c:
+                    6 in c and 8 in c:
                 if 5 in c and 7 in c:
                     result = self.UNRESOLVED
                 else:
                     result = self.FAIL
             if 1 in c or 2 in c or 3 in c or 4 in c or \
-                6 in c or 8 in c:
+                    6 in c or 8 in c:
                 if result == 1000:
                     result = self.UNRESOLVED
             if result == 1000:
@@ -441,7 +452,7 @@ if __name__ == '__main__':
         def __init__(self):
             self._test = self._test_f
             DD.__init__(self)
-                        
+
     print("WYNOT - a tool for delta debugging.")
     mydd = MyDD()
     # mydd.debug_test     = 1        # Enable debugging output
@@ -461,7 +472,7 @@ if __name__ == '__main__':
     # print("The 1-minimal failure-inducing input is", c)
     # print("Removing any element will make the failure go away.")
     # print()
-    
+
     list = ["A King there was in days of old,",
             "ere Men yet walked upon the mould.",
             "There Juliet and her Romeo,",
@@ -470,7 +481,7 @@ if __name__ == '__main__':
     (c, c1, c2) = mydd.dd(list)        # Invoke DD
     print("The 1-minimal failure-inducing difference is", c)
     print(c1, "passes,", c2, "fails")
-    
+
 
 # Local Variables:
 # mode: python
