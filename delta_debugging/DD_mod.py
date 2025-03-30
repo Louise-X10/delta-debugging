@@ -163,7 +163,7 @@ class DDMods(DD):
         deltas = self.__apply_remove(deltas, removed)
         deltas = self.__apply_insert(deltas, inserted)
         deltas = self.__apply_prepend(deltas, prepend)
-        deltas = [(i, char) for i, (_, char) in enumerate(deltas)]
+        # deltas = [(i, char) for i, (_, char) in enumerate(deltas)]
         return deltas
 
 
