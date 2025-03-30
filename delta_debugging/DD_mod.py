@@ -140,7 +140,8 @@ class DDMods(DD):
                     # Check the deleted char is the one speficied by removed
                     assert delta_dict[start_idx + i] == chars[i]
                     del delta_dict[start_idx + i]
-        deltas = sorted(delta_dict.items())
+        deltas = delta_dict.items()
+        # deltas = sorted(delta_dict.items())
         return deltas
 
     def __apply_insert(self, deltas, inserted):
@@ -160,7 +161,7 @@ class DDMods(DD):
 
     def __apply_mods(self, deltas, mods):
         prepend, inserted, removed = self.__split_mods(mods)
-        deltas = self.__apply_remove(deltas, removed)
+        # deltas = self.__apply_remove(deltas, removed)
         deltas = self.__apply_insert(deltas, inserted)
         deltas = self.__apply_prepend(deltas, prepend)
         # deltas = [(i, char) for i, (_, char) in enumerate(deltas)]
