@@ -155,10 +155,12 @@ class DDMods(DD):
         # Sort the insertions by index in reverse order
         for insert_idx in sorted(insertions.keys(), reverse=True):
             chars = insertions[insert_idx]
-            for i, (idx, _) in enumerate(deltas):
+            # Find the insert index in deltas in reversed order
+            for i, (idx, _) in enumerate(reversed(deltas)):
                 if idx == insert_idx:
-                    for char in reversed(chars):  # Preserve order of insertions
-                        deltas.insert(i + 1, (None, char))
+                    # Insert chars in reversed order
+                    for char in (chars):
+                        deltas.insert(len(deltas) - i, (idx, char))
                     break
         return deltas
 
