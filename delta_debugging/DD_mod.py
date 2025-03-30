@@ -73,16 +73,17 @@ class DDMods(DD):
         mods = []
         idx = -1
         for d in diff:
+            char = d[2:]
             if d.startswith("  "):  # Matched character
                 idx += 1
                 prepend = False
             elif d.startswith("+ "):  # Added character
-                mods.append((idx, d[2], self.ADD))
+                mods.append((idx, char, self.ADD))
             # elif d.startswith("? "):  # Changed character
             #     mods.append((idx, d[2], self.CHANGE))
             elif d.startswith("- "):  # Removed character
                 idx += 1
-                mods.append((idx, d[2], self.REMOVE))
+                mods.append((idx, char, self.REMOVE))
 
         # * Modify prepend indices
         prepend = [mod for mod in mods if mod[0] < 0]
