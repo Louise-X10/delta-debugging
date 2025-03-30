@@ -101,15 +101,17 @@ class DDMods(DD):
     
     def __modsminus(self, mods, submods):
         """Return a list of all elements of mods that are not in submods."""
-        s2 = {}
+        count = {}
         for delta in submods:
-            s2[delta] = 1
+            count[delta] = count.get(delta, 0) + 1
 
-        c = []
+        result = []
         for delta in mods:
-            if delta not in s2:
-                c.append(delta)
-        return c
+            if delta in count and count[delta] > 0:
+                count[delta] -= 1
+            else:
+                result.append(delta)
+        return result
 
     def __split_mods(self, mods):
         prepend = []
@@ -125,14 +127,20 @@ class DDMods(DD):
         return prepend, inserted, removed
 
     def __apply_remove(self, deltas, removed):
-        delta_dict = {idx: char for idx, char in deltas}
-        for start_idx, chars in removed:
-            for i in range(len(chars)):  # Remove each character from the given start index
-                if start_idx + i in delta_dict:
-                    # Check the deleted char is the one speficied by removed
-                    assert delta_dict[start_idx + i] == chars[i]
-                    del delta_dict[start_idx + i]
-        deltas = delta_dict.items()
+        remove_dict = {idx: char for idx, char in removed}
+        deltas = [(idx, char)
+                  for idx, char in deltas if idx not in remove_dict]
+        # for start_idx, chars in removed:
+        #     # Find the insert index in deltas
+        #     for i, (idx, _) in enumerate(deltas):
+        #         if idx == start_idx:
+        #             # Remove each character from the given start index
+        #             for i in range(len(chars)):
+        #                 if start_idx + i in delta_dict:
+        #                     # Check the deleted char is the one speficied by removed
+        #                     assert delta_dict[start_idx + i] == chars[i]
+        #                     del delta_dict[start_idx + i]
+        # deltas = delta_dict.items()
         # deltas = sorted(delta_dict.items())
         return deltas
 
