@@ -94,7 +94,11 @@ class DDMods(DD):
                 remove_idx += 1
             elif d.startswith(" "): # Not removed character
                 remove_idx += 1
-
+        prepend = [mod for mod in mods if mod[0] < 0]
+        plen = len(prepend)
+        prepend = [(-plen + i, val, op)
+                   for i, (_, val, op) in enumerate(prepend)]
+        mods[:plen] = prepend
         return mods
 
     # Helpers
@@ -120,7 +124,7 @@ class DDMods(DD):
         inserted = []
         removed = []
         for pos, char, op in mods:
-            if pos == -1:
+            if pos < 0:
                 prepend.append((pos, char))  # Collect elements with index -1
             elif op == self.ADD:
                 inserted.append((pos, char))
@@ -150,7 +154,7 @@ class DDMods(DD):
         return deltas
 
     def __apply_prepend(self, deltas, prepend):
-        prepend_chars = [(-1, entry[1]) for entry in prepend]
+        prepend_chars = [(entry[0], entry[1]) for entry in prepend]
         deltas = prepend_chars + deltas
         return deltas
 
