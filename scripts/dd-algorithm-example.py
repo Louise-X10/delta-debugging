@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # This test script illustrates the 
+import sys
+sys.path.append('../')
 
 try:
-	from delta_debugging.DD import DD
+	from delta_debugger.delta_debugging.DD import DD
 except ImportError as e:
 	print("Unable to import delta debugging library.  Please ensure it is "
 		"installed.  https://github.com/grimm-co/delta-debugging")
@@ -32,9 +34,8 @@ if __name__ == '__main__':
 
 	# Convert string into the delta format
 	deltas = list(map(lambda x: (x, test_input[x]), range(len(test_input))))
-
-mydd = TestDD()
-c = mydd.ddmin(deltas)              # Invoke DDMIN
+	mydd = TestDD()
+	c = mydd.ddmin(deltas)              # Invoke DDMIN
 
 	minimal = "".join([x[1] for x in c])
 	print('Found minimal test case: "{}"'.format(minimal))
