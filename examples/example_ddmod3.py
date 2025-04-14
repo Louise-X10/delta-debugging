@@ -50,12 +50,13 @@ def deltas_to_bytes(deltas):
 
 # Example usage
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    
+    if len(sys.argv) != 3:
         print("Need two arguments: crashing input and valid input")
         sys.exit(1)
-
-    crashing_input = sys.argv[0]
-    valid_input = sys.argv[1]
+    
+    crashing_input = sys.argv[1]
+    valid_input = sys.argv[2]
     fuzzer = "server"
     mydd = TestDD(fuzzer_path=fuzzer)
 
