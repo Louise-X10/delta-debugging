@@ -51,7 +51,7 @@ def deltas_to_bytes(deltas):
 # Example usage
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print(f"Need two arguments: crashing input and valid input")
+        print("Need two arguments: crashing input and valid input")
         sys.exit(1)
 
     crashing_input = sys.argv[0]
