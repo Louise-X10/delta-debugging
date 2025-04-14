@@ -1,6 +1,8 @@
-import delta_debugging
-from delta_debugging.DD_mod import DDMods
 
+import sys
+sys.path.append('../')
+
+from delta_debugging.DD_mod import DDMods
 
 class TestDD(DDMods):
     def __init__(self):
@@ -31,16 +33,7 @@ def deltas_to_str(deltas):
     return "".join([x[1] for x in deltas])
 
 
-mydd = TestDD()
-string1 = "1222>"
+test_input = "1222>"
 string2 = "<55513>;"
-mods = mydd.get_mods(string1, string2)
-c1 = str_to_deltas(string1)
-c2 = str_to_deltas(string2)
-c = mods
-
-print("Expanding failure input ", mydd.pretty(c1), " to ", mydd.pretty(c2))
-
-(c, c1, c2) = mydd.dddiff_mods(c1, c2, mods[:6])
-print("The minimal failure to ", mydd.pretty(c2), " is ", mydd.pretty(c1))
-print("The difference is ", c)
+mydd = TestDD()
+(c, c1, c2) = mydd.ddiff_max(test_input, string2)
