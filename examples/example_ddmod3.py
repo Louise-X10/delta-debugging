@@ -46,6 +46,7 @@ def bytes_to_deltas(b):
 
 
 def deltas_to_bytes(deltas):
+    print("Converting deltas to bytes...", deltas)
     return b"".join([x[1] for x in deltas])
 
 
