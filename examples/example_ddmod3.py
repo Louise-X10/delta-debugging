@@ -11,6 +11,7 @@ class TestDD(DDMods):
         self.debug_dd = 0
         self.verbose = 0
         self.fuzzer_path = fuzzer_path
+        self.binary = True
 
     def _test(self, deltas):
         # Reconstruct the binary input

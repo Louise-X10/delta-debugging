@@ -16,6 +16,7 @@ class DDMods(DD):
         DD.__init__(self)
         self.debug_dd = 0
         self.verbose = 0
+        self.binary = True
 
     def coerce(self, c):
         """Return the configuration C as a compact string"""
@@ -30,24 +31,19 @@ class DDMods(DD):
 
     # * String to Delta helpers
     def str_to_deltas(self, test_input):
-        if isinstance(test_input, str):
-            deltas = list(
-            map(lambda x: (x, test_input[x]), range(len(test_input))))
-        elif isinstance(test_input, bytes):
+        if self.binary:
             deltas = list(
                 map(lambda x: (x, bytes([test_input[x]])), range(len(test_input))))
         else:
-            print("Invalid input type. Expected str or bytes.")
+            deltas = list(
+            map(lambda x: (x, test_input[x]), range(len(test_input))))
         return deltas
 
     def deltas_to_str(self, deltas):
-        if isinstance(deltas[0][1], str):
-            ret = "".join([x[1] for x in deltas])
-        elif isinstance(deltas[0][1], bytes):
+        if self.binary:
             ret = b"".join([x[1] for x in deltas])
         else:
-            print("Invalid input type. Expected str or bytes.")
-            ret = None
+            ret = "".join([x[1] for x in deltas])
         return ret
 
     # * Modifications
