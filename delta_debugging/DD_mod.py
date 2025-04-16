@@ -37,7 +37,7 @@ class DDMods(DD):
         else:
             deltas = list(
             map(lambda x: (x, test_input[x]), range(len(test_input))))
-        print("Str to deltas: ", deltas)
+        # print("Str to deltas: ", deltas)
         return deltas
 
     def deltas_to_str(self, deltas):
@@ -45,7 +45,7 @@ class DDMods(DD):
             ret = b"".join([x[1] for x in deltas])
         else:
             ret = "".join([x[1] for x in deltas])
-        print("Deltas to str: ", ret)
+        # print("Deltas to str: ", ret)
         return ret
 
     # * Modifications

@@ -34,7 +34,7 @@ class TestDD(DDMods):
             tmp.flush()
             tmp_path = tmp.name
         try:
-            print("Running fuzzer with input of length {}...".format(len(binary_input)))
+            # print("Running fuzzer with input of length {}...".format(len(binary_input)))
             
             result = subprocess.run(
                 [self.fuzzer_path, tmp_path],
