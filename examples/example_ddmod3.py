@@ -60,7 +60,7 @@ if __name__ == "__main__":
     
     crashing_input = sys.argv[1]
     valid_input = sys.argv[2]
-    save_path = crashing_input + "-min"
+    save_path = crashing_input + "-max"
     fuzzer = "server"
     mydd = TestDD(fuzzer_path=fuzzer)
 
