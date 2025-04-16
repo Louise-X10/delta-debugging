@@ -60,6 +60,7 @@ if __name__ == "__main__":
     
     crashing_input = sys.argv[1]
     valid_input = sys.argv[2]
+    save_path = crashing_input + "-min"
     fuzzer = "server"
     mydd = TestDD(fuzzer_path=fuzzer)
 
@@ -75,7 +76,7 @@ if __name__ == "__main__":
     print("The minimally different failure to  ",
           mydd.pretty(c2), " is ", mydd.pretty(c1))
     
-    with open(crashing_input + "-min", "wb") as f:
+    with open(save_path, "wb") as f:
         f.write(mydd.pretty(c1))
     
 
