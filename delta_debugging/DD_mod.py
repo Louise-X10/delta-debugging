@@ -16,11 +16,12 @@ class DDMods(DD):
         DD.__init__(self)
         self.debug_dd = 0
         self.verbose = 0
+        self.binary = True
 
     def coerce(self, c):
         """Return the configuration C as a compact string"""
         # Default: use printable representation
-        return "".join([x[1] for x in c])
+        return self.deltas_to_str(c)
 
     def pretty(self, c):
         """Like coerce(), but sort beforehand"""
@@ -30,33 +31,62 @@ class DDMods(DD):
 
     # * String to Delta helpers
     def str_to_deltas(self, test_input):
-        deltas = list(
+        if self.binary:
+            deltas = list(
+                map(lambda x: (x, bytes([test_input[x]])), range(len(test_input))))
+        else:
+            deltas = list(
             map(lambda x: (x, test_input[x]), range(len(test_input))))
+        # print("Str to deltas: ", deltas)
         return deltas
 
     def deltas_to_str(self, deltas):
-        return "".join([x[1] for x in deltas])
+        if self.binary:
+            ret = b"".join([x[1] for x in deltas])
+        else:
+            ret = "".join([x[1] for x in deltas])
+        # print("Deltas to str: ", ret)
+        return ret
 
     # * Modifications
     # Addition: the index after which to insert
     # Removal: the index of the character to remove
     def get_mods(self, string1, string2):
         # Get list of modifications to change string1 into string2
-        diff = list(difflib.ndiff(string1, string2))
-        mods = []
-        idx = -1
-        for d in diff:
-            char = d[2:]
-            if d.startswith("  "):  # Matched character
-                idx += 1
-                prepend = False
-            elif d.startswith("+ "):  # Added character
-                mods.append((idx, char, self.ADD))
-            # elif d.startswith("? "):  # Changed character
-            #     mods.append((idx, d[2], self.CHANGE))
-            elif d.startswith("- "):  # Removed character
-                idx += 1
-                mods.append((idx, char, self.REMOVE))
+        if self.binary:
+            # Convert bytes into list of strings
+            string1 = [chr(b) for b in string1]
+            string2 = [chr(b) for b in string2]
+            diff = list(difflib.ndiff(string1, string2))
+            mods = []
+            idx = -1
+            for d in diff:
+                code = d[0]
+                val = d[2]
+                if code == ' ':
+                    idx += 1
+                elif code == '+':
+                    mods.append((idx, val.encode('latin1'), 'ADD'))
+                elif code == '-':
+                    idx += 1
+                    mods.append((idx, val.encode('latin1'), 'REMOVE'))
+        else:
+            diff = list(difflib.ndiff(string1, string2))
+            mods = []
+            idx = -1
+            for d in diff:
+                code = d[0]
+                char = d[2:]
+                if code == ' ':  # Matched character
+                    idx += 1
+                    prepend = False
+                elif code == '+':  # Added character
+                    mods.append((idx, char, self.ADD))
+                # elif d.startswith("? "):  # Changed character
+                #     mods.append((idx, d[2], self.CHANGE))
+                elif code == '-':  # Removed character
+                    idx += 1
+                    mods.append((idx, char, self.REMOVE))
 
         # * Modify prepend indices
         prepend = [mod for mod in mods if mod[0] < 0]
@@ -207,44 +237,44 @@ class DDMods(DD):
         # csub = self.__listminus(csubr, r)
         return t, csubr
 
-    # * Delta debugging for string1 (failing) and string2 (passing)
+    # * Delta debugging mods for string1 (failing) and string2 (passing)
     def ddiff_max(self, string1, string2):
-        if self.verbose:
-            print("Computing min failure input of ", string1)
-        deltas = list(map(lambda x: (x, string1[x]), range(len(string1))))
+        # if self.verbose:
+        print('Minimizing failure input: "{}"'.format(string1))
+        deltas = self.str_to_deltas(string1)
         c = self.ddmin(deltas)              # Invoke DDMIN
-        minimal = "".join([x[1] for x in c])
-        if self.verbose:
-            print("The minimal failure of ", string1, " is ", minimal)
+        minimal = self.deltas_to_str(c)
+        # if self.verbose:
+        print('Found minimal failure input: "{}"'.format(minimal))
 
         string1 = minimal
         mods = self.get_mods(string1, string2)
         c1 = self.str_to_deltas(string1)
         c2 = self.str_to_deltas(string2)
         c = mods
-        if self.verbose:
-            print("Modifying failure input ", self.pretty(
-                c1), " towards ", self.pretty(c2))
+        # if self.verbose:
+        print("Modifying failure input from ", self.pretty(
+            c1), " towards ", self.pretty(c2))
 
-        (c, c1, c2) = self.dddiff_mods(c1, c2, mods[:6])
-        if self.verbose:
-            print("The minimally different failure to ", self.pretty(
-                c2), " is ", self.pretty(c1))
-            print("The difference is ", c)
+        (c, c1, c2) = self.ddiff_mods(c1, c2, mods[:6])
+        # if self.verbose:
+        print("The minimally different failure to ", self.pretty(
+            c2), " is ", self.pretty(c1))
+        # print("The difference is ", c)
         return (c, c1, c2)
 
     # * Delta debugging with list of modifications from c1 (min failing) to c2 (passing)
 
-    def dddiff_mods(self, c1, c2, mods):
+    def ddiff_mods(self, c1, c2, mods):
         n = 2
 
         if self.debug_dd:
-            print("dddiff(" + self.pretty(c1) + ", " + str(n) + ")...")
+            print("ddiff(" + self.pretty(c1) + ", " + str(n) + ")...")
 
-        outcome = self._dddiff_mods(c1, c2, mods, n)
+        outcome = self._ddiff_mods(c1, c2, mods, n)
 
         if self.debug_dd:
-            print("dddiff(" + self.pretty(c1) + ", " + str(n) + ") = " +
+            print("ddiff(" + self.pretty(c1) + ", " + str(n) + ") = " +
                   outcome)
 
         return outcome
@@ -252,7 +282,7 @@ class DDMods(DD):
     # c1 = failing
     # c2 = passing
     # c = list of mods from c1 to c2
-    def _dddiff_mods(self, c1, c2, mods, n):
+    def _ddiff_mods(self, c1, c2, mods, n):
         run = 1
         c = mods  # * List of deltas is list of mods
 
@@ -359,7 +389,7 @@ class DDMods(DD):
             run = run + 1
 
     def dd(self, c):
-        return self.dddiff(c)           # Backwards compatibility
+        return self.ddiff(c)           # Backwards compatibility
 
 
 if __name__ == '__main__':
