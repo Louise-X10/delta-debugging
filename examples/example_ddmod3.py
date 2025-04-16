@@ -74,3 +74,8 @@ if __name__ == "__main__":
     (c, c1, c2) = mydd.ddiff_max(crashing, passing)
     print("The minimally different failure to  ",
           mydd.pretty(c2), " is ", mydd.pretty(c1))
+    
+    with open(crashing_input + "-min", "wb") as f:
+        f.write(mydd.pretty(c1))
+    
+
