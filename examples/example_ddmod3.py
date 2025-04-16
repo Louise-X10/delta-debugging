@@ -14,7 +14,7 @@ class TestDD(DDMods):
 
     def _test(self, deltas):
         # Reconstruct the binary input
-        binary_data = deltas_to_bytes(deltas)
+        binary_data = self.deltas_to_str(deltas)
         print("Testing input of length {}...".format(len(binary_data)))
 
         if not binary_data:
@@ -38,17 +38,6 @@ class TestDD(DDMods):
         except Exception as e:
             print("Error running fuzzer: {}".format(e))
             return False
-
-
-def bytes_to_deltas(b):
-    print("Converting bytes to deltas...", b)
-    return list(map(lambda i: (i, bytes(b[i])), range(len(b))))
-
-
-def deltas_to_bytes(deltas):
-    print("Converting deltas to bytes...", deltas)
-    return b"".join([x[1] for x in deltas])
-
 
 # Example usage
 if __name__ == "__main__":

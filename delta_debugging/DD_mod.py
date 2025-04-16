@@ -30,12 +30,25 @@ class DDMods(DD):
 
     # * String to Delta helpers
     def str_to_deltas(self, test_input):
-        deltas = list(
+        if isinstance(test_input, str):
+            deltas = list(
             map(lambda x: (x, test_input[x]), range(len(test_input))))
+        elif isinstance(test_input, bytes):
+            deltas = list(
+                map(lambda x: (x, bytes([test_input[x]])), range(len(test_input))))
+        else:
+            print("Invalid input type. Expected str or bytes.")
         return deltas
 
     def deltas_to_str(self, deltas):
-        return "".join([x[1] for x in deltas])
+        if isinstance(deltas[0][1], str):
+            ret = "".join([x[1] for x in deltas])
+        elif isinstance(deltas[0][1], bytes):
+            ret = b"".join([x[1] for x in deltas])
+        else:
+            print("Invalid input type. Expected str or bytes.")
+            ret = None
+        return ret
 
     # * Modifications
     # Addition: the index after which to insert
@@ -211,7 +224,7 @@ class DDMods(DD):
     def ddiff_max(self, string1, string2):
         # if self.verbose:
         print('Minimizing failure input: "{}"'.format(string1))
-        deltas = list(map(lambda x: (x, string1[x]), range(len(string1))))
+        deltas = self.str_to_deltas(string1)
         c = self.ddmin(deltas)              # Invoke DDMIN
         minimal = "".join([x[1] for x in c])
         # if self.verbose:
