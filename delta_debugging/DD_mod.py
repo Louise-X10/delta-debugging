@@ -31,21 +31,21 @@ class DDMods(DD):
 
     # * String to Delta helpers
     def str_to_deltas(self, test_input):
-        print("Str to deltas: ", test_input)
         if self.binary:
             deltas = list(
                 map(lambda x: (x, bytes([test_input[x]])), range(len(test_input))))
         else:
             deltas = list(
             map(lambda x: (x, test_input[x]), range(len(test_input))))
+        print("Str to deltas: ", deltas)
         return deltas
 
     def deltas_to_str(self, deltas):
-        print("Deltas to str: ", deltas)
         if self.binary:
             ret = b"".join([x[1] for x in deltas])
         else:
             ret = "".join([x[1] for x in deltas])
+        print("Deltas to str: ", ret)
         return ret
 
     # * Modifications

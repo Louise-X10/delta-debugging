@@ -28,6 +28,7 @@ class TestDD(DDMods):
     def test_seed(self, binary_input):
         """Run fuzzer with binary_input piped to stdin and return True if it doesn't crash."""
         try:
+            print("Running fuzzer with input of length {}...".format(len(binary_input)))
             result = subprocess.run(
                 [self.fuzzer_path],
                 input=binary_input,
