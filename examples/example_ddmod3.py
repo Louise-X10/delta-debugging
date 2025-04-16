@@ -41,6 +41,7 @@ class TestDD(DDMods):
 
 
 def bytes_to_deltas(b):
+    print("Converting bytes to deltas...", b)
     return list(map(lambda i: (i, bytes(b[i])), range(len(b))))
 
 
