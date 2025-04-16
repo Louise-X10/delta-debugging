@@ -1,15 +1,17 @@
-Delta Debugging is a fantastic tool which will take a test case which crashes
-a program and reduce it until you are left with the smallest file which still
-causes the crash.  It is quite efficient at doing this and has a lot of
-academic research backing it up.  More importantly, it is very practical in
-the real world at helping triage crashes.
+# Delta-Debugger
 
-For more info, check out their site:
-https://www.st.cs.uni-saarland.de/dd/
+This repo is a modified version of [grimm-co/delta-debugging](https://github.com/grimm-co/delta-debugging/tree/master). The modified delta-debugger is in `DD_mod.py`, and example usages are provided in `examples/`. 
 
-This fork of DD is compatible with both Python 2 and 3 (original was written
-for Python 2 and did not work in 3).  We also plan on making some scripts to
-improve usability and reduce the amout of custom python code that needs to be
-written and hopefully eliminate the need to write any custom code in most
-cases.
+# Examples
 
+`example_ddmod.ipynb` is a toy example on string inputs, and `example_ddmod2.ipynb` is a toy example on JSON inputs. `example_ddmod3.ipynb` is an example on binary inputs. 
+
+## Example 3
+
+This example is can be ran on the real-world bug found in `boringssl`. The bug can be reproduced using [ARVO](https://github.com/n132/ARVO-Meta/tree/main/). On Docker, run
+
+```
+docker run -it n132/arvo:2692-vul arvo
+```
+
+The crashing input can be downloaded from [OSSFuzz](https://issues.oss-fuzz.com/issues/42488781). Valid inputs can be found at the seed corpus directory `boringssl/fuzz/server_corpus`. For example, see `example_ddmod3.sh` for a list of commands I ran to launch delta-debugger. 
