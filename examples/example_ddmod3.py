@@ -2,6 +2,8 @@ import sys
 sys.path.append('../')
 
 import subprocess
+import tempfile
+import os
 from delta_debugging.DD_mod import DDMods
 
 
@@ -27,19 +29,27 @@ class TestDD(DDMods):
 
     def test_seed(self, binary_input):
         """Run fuzzer with binary_input piped to stdin and return True if it doesn't crash."""
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp.write(binary_input)
+            tmp.flush()
+            tmp_path = tmp.name
         try:
             print("Running fuzzer with input of length {}...".format(len(binary_input)))
+            
             result = subprocess.run(
-                [self.fuzzer_path],
-                input=binary_input,
+                [self.fuzzer_path, tmp_path],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 check=False
             )
-            return result.returncode == 0
+            ret = result.returncode == 0
         except Exception as e:
             print("Error running fuzzer: {}".format(e))
-            return False
+            ret = False
+        finally:
+            os.remove(tmp_path)  # Clean up temp file
+            return ret
+    
 
 # Example usage
 if __name__ == "__main__":
