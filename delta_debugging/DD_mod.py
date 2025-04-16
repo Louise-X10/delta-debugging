@@ -207,44 +207,44 @@ class DDMods(DD):
         # csub = self.__listminus(csubr, r)
         return t, csubr
 
-    # * Delta debugging for string1 (failing) and string2 (passing)
+    # * Delta debugging mods for string1 (failing) and string2 (passing)
     def ddiff_max(self, string1, string2):
-        if self.verbose:
-            print("Computing min failure input of ", string1)
+        # if self.verbose:
+        print('Minimizing failure input: "{}"'.format(string1))
         deltas = list(map(lambda x: (x, string1[x]), range(len(string1))))
         c = self.ddmin(deltas)              # Invoke DDMIN
         minimal = "".join([x[1] for x in c])
-        if self.verbose:
-            print("The minimal failure of ", string1, " is ", minimal)
+        # if self.verbose:
+        print('Found minimal failure input: "{}"'.format(minimal))
 
         string1 = minimal
         mods = self.get_mods(string1, string2)
         c1 = self.str_to_deltas(string1)
         c2 = self.str_to_deltas(string2)
         c = mods
-        if self.verbose:
-            print("Modifying failure input ", self.pretty(
-                c1), " towards ", self.pretty(c2))
+        # if self.verbose:
+        print("Modifying failure input from ", self.pretty(
+            c1), " towards ", self.pretty(c2))
 
-        (c, c1, c2) = self.dddiff_mods(c1, c2, mods[:6])
-        if self.verbose:
-            print("The minimally different failure to ", self.pretty(
-                c2), " is ", self.pretty(c1))
-            print("The difference is ", c)
+        (c, c1, c2) = self.ddiff_mods(c1, c2, mods[:6])
+        # if self.verbose:
+        print("The minimally different failure to ", self.pretty(
+            c2), " is ", self.pretty(c1))
+        # print("The difference is ", c)
         return (c, c1, c2)
 
     # * Delta debugging with list of modifications from c1 (min failing) to c2 (passing)
 
-    def dddiff_mods(self, c1, c2, mods):
+    def ddiff_mods(self, c1, c2, mods):
         n = 2
 
         if self.debug_dd:
-            print("dddiff(" + self.pretty(c1) + ", " + str(n) + ")...")
+            print("ddiff(" + self.pretty(c1) + ", " + str(n) + ")...")
 
-        outcome = self._dddiff_mods(c1, c2, mods, n)
+        outcome = self._ddiff_mods(c1, c2, mods, n)
 
         if self.debug_dd:
-            print("dddiff(" + self.pretty(c1) + ", " + str(n) + ") = " +
+            print("ddiff(" + self.pretty(c1) + ", " + str(n) + ") = " +
                   outcome)
 
         return outcome
@@ -252,7 +252,7 @@ class DDMods(DD):
     # c1 = failing
     # c2 = passing
     # c = list of mods from c1 to c2
-    def _dddiff_mods(self, c1, c2, mods, n):
+    def _ddiff_mods(self, c1, c2, mods, n):
         run = 1
         c = mods  # * List of deltas is list of mods
 
@@ -359,7 +359,7 @@ class DDMods(DD):
             run = run + 1
 
     def dd(self, c):
-        return self.dddiff(c)           # Backwards compatibility
+        return self.ddiff(c)           # Backwards compatibility
 
 
 if __name__ == '__main__':
