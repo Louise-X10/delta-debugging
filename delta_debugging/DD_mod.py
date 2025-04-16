@@ -53,21 +53,40 @@ class DDMods(DD):
     # Removal: the index of the character to remove
     def get_mods(self, string1, string2):
         # Get list of modifications to change string1 into string2
-        diff = list(difflib.ndiff(string1, string2))
-        mods = []
-        idx = -1
-        for d in diff:
-            char = d[2:]
-            if d.startswith("  "):  # Matched character
-                idx += 1
-                prepend = False
-            elif d.startswith("+ "):  # Added character
-                mods.append((idx, char, self.ADD))
-            # elif d.startswith("? "):  # Changed character
-            #     mods.append((idx, d[2], self.CHANGE))
-            elif d.startswith("- "):  # Removed character
-                idx += 1
-                mods.append((idx, char, self.REMOVE))
+        if self.binary:
+            # Convert bytes into list of strings
+            string1 = [chr(b) for b in string1]
+            string2 = [chr(b) for b in string2]
+            diff = list(difflib.ndiff(string1, string2))
+            mods = []
+            idx = -1
+            for d in diff:
+                code = d[0]
+                val = d[2]
+                if code == ' ':
+                    idx += 1
+                elif code == '+':
+                    mods.append((idx, val.encode('latin1'), 'ADD'))
+                elif code == '-':
+                    idx += 1
+                    mods.append((idx, val.encode('latin1'), 'REMOVE'))
+        else:
+            diff = list(difflib.ndiff(string1, string2))
+            mods = []
+            idx = -1
+            for d in diff:
+                code = d[0]
+                char = d[2:]
+                if code == ' ':  # Matched character
+                    idx += 1
+                    prepend = False
+                elif code == '+':  # Added character
+                    mods.append((idx, char, self.ADD))
+                # elif d.startswith("? "):  # Changed character
+                #     mods.append((idx, d[2], self.CHANGE))
+                elif code == '-':  # Removed character
+                    idx += 1
+                    mods.append((idx, char, self.REMOVE))
 
         # * Modify prepend indices
         prepend = [mod for mod in mods if mod[0] < 0]
