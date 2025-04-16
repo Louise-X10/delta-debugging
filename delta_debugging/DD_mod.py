@@ -21,7 +21,7 @@ class DDMods(DD):
     def coerce(self, c):
         """Return the configuration C as a compact string"""
         # Default: use printable representation
-        return "".join([x[1] for x in c])
+        return self.deltas_to_str(c)
 
     def pretty(self, c):
         """Like coerce(), but sort beforehand"""
@@ -224,7 +224,7 @@ class DDMods(DD):
         print('Minimizing failure input: "{}"'.format(string1))
         deltas = self.str_to_deltas(string1)
         c = self.ddmin(deltas)              # Invoke DDMIN
-        minimal = "".join([x[1] for x in c])
+        minimal = self.deltas_to_str(c)
         # if self.verbose:
         print('Found minimal failure input: "{}"'.format(minimal))
 
