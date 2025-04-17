@@ -4,7 +4,9 @@ This repo is a modified version of [grimm-co/delta-debugging](https://github.com
 
 # Implementations
 
-The `ddmax` method takes a **crashing input** and **valid input**, first calls `ddmin` to minimize the crashing input, then computes a **maximized crashing input** that is minimally close to the valid input. This is done by definint a list of modifications that can be applied to change the (min) crashing input into the valid input. The iterative procedure is similar to that of the original delta-debugger, except that I don't use complements.
+The `ddmax` method takes a **crashing input** and **valid input**, first calls `ddmin` to minimize the crashing input, then computes a **maximized crashing input** that is minimally close to the valid input. This is done by definint a list of modifications that can be applied to change the (min) crashing input into the valid input. The iterative procedure is similar to that of the original delta-debugger, except that I only check subsets, and don't check subset complements. This is because I only need to "narrow down" on one side (from crashing towards valid), rather than "narrow down" on both sides towards the middle, which the original delta-debugger aims for. 
+
+The `DDMods` class has an argument `.binary` that signals whether it accepts strings or binary data as input. When using this maximizing delta-debugger, the user must instantiate an instance of `DDMods` with a `_text()` method that parses input, runs target program on input, and returns `FAIL` or `PASS` accordint to whether program crashed on given input. The user must also use the correct `.binary` setting. 
 
 # Examples
 
