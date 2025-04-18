@@ -54,14 +54,14 @@ class TestDD(DDMods):
 # Example usage
 if __name__ == "__main__":
     
-    if len(sys.argv) != 3:
-        print("Need two arguments: crashing input and valid input")
+    if len(sys.argv) != 4:
+        print("Need three arguments: crashing input, valid input, target binary")
         sys.exit(1)
     
     crashing_input = sys.argv[1]
     valid_input = sys.argv[2]
     save_path = crashing_input + "-max"
-    fuzzer = "server"
+    fuzzer = sys.argv[3]
     mydd = TestDD(fuzzer_path=fuzzer)
 
     # Load binary files
