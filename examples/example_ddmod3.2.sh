@@ -1,4 +1,6 @@
 #!/bin/bash
+
+arvo
 CRASH_INPUT=/src/clusterfuzz-testcase-minimized-read_pem-5632355033677824
 SEED=01270d57eecae64f59b9b27cc06e3f9eaf2304e2 
 TARGET=read_pem

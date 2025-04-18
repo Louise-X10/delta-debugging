@@ -1,4 +1,6 @@
 #!/bin/bash
+
+arvo
 CRASH_INPUT=/src/clusterfuzz-testcase-minimized-ssl_ctx_api-5807097051611136
 SEED=009f7a3df2effc9612a913d269fd0b4598ca7f8c 
 TARGET=ssl_ctx_api

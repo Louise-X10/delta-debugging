@@ -1,4 +1,6 @@
 #!/bin/bash
+
+arvo
 CRASH_INPUT=/src/clusterfuzz-testcase-minimized-server-6088352019251200
 SEED=1037d8ef263682ea727da03710954173df7212ac
 TARGET=server
