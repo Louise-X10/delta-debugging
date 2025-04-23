@@ -361,6 +361,33 @@ class DDMods(DD):
                     # Not found
                     progress = 0
 
+            # Check complements
+            for j in range(n):
+                i = j % n
+
+                if self.debug_dd:
+                    print("dd: trying", self.pretty(cs[i]))
+
+                (t, csub) = self.test_mods_and_resolve(
+                    c1, cs[i], c2, self.REMOVE)
+                # csub = self.__listunion(c1, csub)
+
+                if t == self.FAIL:
+                    # Found
+                    progress = 1
+                    # * Change lower bound to new failing test case
+                    next_c1 = csub
+                    next_mods = self.__modsminus(c, cs[i])
+                    next_n = 2
+
+                    if self.debug_dd:
+                        print("dd: increase c1 to", len(next_c1), "deltas:",)
+                        print(self.pretty(next_mods))
+                    break
+                elif t == self.PASS:
+                    # Not found
+                    progress = 0
+
             if progress:
                 # if self.animate is not None:
                 #     self.animate.write_outcome(
