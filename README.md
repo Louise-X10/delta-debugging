@@ -77,8 +77,7 @@ To reproduce the bug,
 docker run -it n132/arvo:64367-vul arvo
 ```
 
-Run `arvo` to reproduce the bug, which would print the seed used and save the failure reproducer file. The crashing input is `b'7%eeeee7%'`. The target program is the `PhoeneticEngineFuzzer` program, and can be seen [here](https://github.com/google/oss-fuzz/blob/master/projects/apache-commons-codec/PhoneticEngineFuzzer.java). Therefore, I manually created a valid input to be the binary data representing `Hello`. The resulting maximized crashing input is `b'elloeeeee7%'`. See `example_ddmod4.sh` for the list of commands that I ran.
-
+Run `arvo` to reproduce the bug, which would print the seed used and save the failure reproducer file. The crashing input is `b'7%eeeee7%'`. The target program is the `PhoeneticEngineFuzzer` program, and can be seen [here](https://github.com/google/oss-fuzz/blob/master/projects/apache-commons-codec/PhoneticEngineFuzzer.java). Therefore, I manually created a valid input to be the binary data representing `Hello`. The resulting maximized crashing input is `b'elloeee7%'`. See `example_ddmod4.sh` for the list of commands that I ran.
 ### Example 4.2
 This commons-codec [This bug](https://issues.oss-fuzz.com/issues/42530537) has crash_type "Uncaught exception". The crashing input can be directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=6195774643634176). This bug is not available on ARVO, so I had to reproduce from OSS Fuzz. Unfortunately I wasn't able to reproduce the bug successfully. Here are some attempts I made for reproducing the bug. 
 
