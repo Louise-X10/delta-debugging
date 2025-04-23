@@ -238,16 +238,17 @@ class DDMods(DD):
         return t, csubr
 
     # * Delta debugging mods for string1 (failing) and string2 (passing)
-    def ddiff_max(self, string1, string2):
+    def ddiff_max(self, string1, string2, skipmin=False):
         # if self.verbose:
-        print('Minimizing failure input: "{}"'.format(string1))
-        deltas = self.str_to_deltas(string1)
-        c = self.ddmin(deltas)              # Invoke DDMIN
-        minimal = self.deltas_to_str(c)
-        # if self.verbose:
-        print('Found minimal failure input: "{}"'.format(minimal))
+        if not skipmin:
+            print('Minimizing failure input: "{}"'.format(string1))
+            deltas = self.str_to_deltas(string1)
+            c = self.ddmin(deltas)              # Invoke DDMIN
+            minimal = self.deltas_to_str(c)
+            # if self.verbose:
+            print('Found minimal failure input: "{}"'.format(minimal))
+            string1 = minimal
 
-        string1 = minimal
         mods = self.get_mods(string1, string2)
         c1 = self.str_to_deltas(string1)
         c2 = self.str_to_deltas(string2)
@@ -256,7 +257,7 @@ class DDMods(DD):
         print("Modifying failure input from ", self.pretty(
             c1), " towards ", self.pretty(c2))
 
-        (c, c1, c2) = self.ddiff_mods(c1, c2, mods[:6])
+        (c, c1, c2) = self.ddiff_mods(c1, c2, mods)
         # if self.verbose:
         print("The minimally different failure to ", self.pretty(
             c2), " is ", self.pretty(c1))
@@ -351,6 +352,34 @@ class DDMods(DD):
                     # * Change lower bound to new failing test case
                     next_c1 = csub
                     next_mods = self.__modsminus(c, cs[i])
+                    next_n = 2
+
+                    if self.debug_dd:
+                        print("dd: increase c1 to", len(next_c1), "deltas:",)
+                        print(self.pretty(next_mods))
+                    break
+                elif t == self.PASS:
+                    # Not found
+                    progress = 0
+
+            # Check complements
+            for j in range(n):
+                i = j % n
+
+                if self.debug_dd:
+                    print("dd: trying", self.pretty(cs[i]))
+
+                cbar = self.__modsminus(c, cs[i])
+                (t, csub) = self.test_mods_and_resolve(
+                    c1, cbar, c2, self.REMOVE)
+                # csub = self.__listunion(c1, csub)
+
+                if t == self.FAIL:
+                    # Found
+                    progress = 1
+                    # * Change lower bound to new failing test case
+                    next_c1 = csub
+                    next_mods = self.__modsminus(c, cbar)
                     next_n = 2
 
                     if self.debug_dd:

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 arvo
+SEED=3755726029 # May be dfferent
 CRASH_INPUT=/src/commons-codec/crash-1164d98e38e204f6f44910b1017b272208c0cd1f # Reproduced with ARVO, filename may be different
 # CRASH_INPUT=/src/commons-codec/clusterfuzz-testcase-minimized-PhoneticEngineFuzzer-6726368628703232 # Downloaded from OSS Fuzz
 echo -n Hello > hello.bin
@@ -20,4 +21,4 @@ python3 example_ddmod4.py $CRASH_INPUT $VALID_INPUT $TARGET
 # Valid input:
 # b'Hello'
 # Maximal crashing input:
-# b'elloeeeee7%'
+# b'elloeee7%'
