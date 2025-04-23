@@ -22,7 +22,7 @@ P.S. `example_dd.ipynb` is a simple demonstration for how the original delta deb
 
 ### Example 1
 
-This target program takes string as inputs, and crashes if the input doesn't have `<` or `;`, cotains one `1` and three `2`.  The crashing input is ` "1222>"` which can be minimized to `"1222"`. The valid input is `"<55513>;"`. The resulting maximized crashing input is `5551222`. 
+This target program takes string as inputs, and crashes if the input doesn't have `<` or `;`, cotains one `1` and three `2`.  The crashing input is ` "1222>"` which can be minimized to `"1222"`. The valid input is `"<55513>;"`. The resulting maximized crashing input is `551222`. 
 
 ### Example 2
 
