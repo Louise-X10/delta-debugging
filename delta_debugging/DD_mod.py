@@ -256,7 +256,7 @@ class DDMods(DD):
         print("Modifying failure input from ", self.pretty(
             c1), " towards ", self.pretty(c2))
 
-        (c, c1, c2) = self.ddiff_mods(c1, c2, mods[:6])
+        (c, c1, c2) = self.ddiff_mods(c1, c2, mods)
         # if self.verbose:
         print("The minimally different failure to ", self.pretty(
             c2), " is ", self.pretty(c1))
