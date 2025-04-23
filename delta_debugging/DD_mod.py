@@ -368,8 +368,9 @@ class DDMods(DD):
                 if self.debug_dd:
                     print("dd: trying", self.pretty(cs[i]))
 
+                cbar = self.__modsminus(c, cs[i])
                 (t, csub) = self.test_mods_and_resolve(
-                    c1, cs[i], c2, self.REMOVE)
+                    c1, cbar, c2, self.REMOVE)
                 # csub = self.__listunion(c1, csub)
 
                 if t == self.FAIL:
@@ -377,7 +378,7 @@ class DDMods(DD):
                     progress = 1
                     # * Change lower bound to new failing test case
                     next_c1 = csub
-                    next_mods = self.__modsminus(c, cs[i])
+                    next_mods = self.__modsminus(c, cbar)
                     next_n = 2
 
                     if self.debug_dd:
