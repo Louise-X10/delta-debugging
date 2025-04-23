@@ -62,20 +62,22 @@ This boringssl [bug](https://github.com/n132/ARVO-Meta/blob/main/meta/9808.json)
 docker run -it n132/arvo:9808-vul bash
 ```
 
-See `example_ddmod3.3.sh` for the list of commands I ran. The crashing input is `b'-'`, which is already minimal. After calling my delta-debugger, I obtain a maximal crashing input `b';:\x16\x07;-'` which is closer to the valid input. 
+See `example_ddmod3.3.sh` for the list of commands I ran. The crashing input is `b'-'`, which is already minimal. After calling my delta-debugger, I obtain a maximal crashing input that is much closer to the valid input. 
 
 ## Apache-Commons-Code Examples
 
 ### Example 4
 
 This commons-codec [bug](https://issues.oss-fuzz.com/issues/42530374) has crash_type "Security exception". The crashing input can be directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=6726368628703232), or reproduced by running `arvo` in the following Docker container, 
-To reproduce the bug, run `arvo` in the following Docker container, 
+
+(This binary example is ran on the real-world bug found by OSS Fuzz, specifically a bug in [commons-codec](https://github.com/apache/commons-codec/tree/master).)
+To reproduce the bug, 
 
 ```
-docker run -it n132/arvo:64367-vul bash
+docker run -it n132/arvo:64367-vul arvo
 ```
 
-Running `arvo` to reproduce the bug would print the seed used and save the failure reproducer file. The crashing input is `b'7%eeeee7%'`. The target program is the `PhoeneticEngineFuzzer` program, and can be seen [here](https://github.com/google/oss-fuzz/blob/master/projects/apache-commons-codec/PhoneticEngineFuzzer.java). Therefore, I manually created a valid input to be the binary data representing `Hello`. The resulting maximized crashing input is `b'elloeeeee7%'`. See `example_ddmod4.sh` for the list of commands that I ran.
+Run `arvo` to reproduce the bug, which would print the seed used and save the failure reproducer file. The crashing input is `b'7%eeeee7%'`. The target program is the `PhoeneticEngineFuzzer` program, and can be seen [here](https://github.com/google/oss-fuzz/blob/master/projects/apache-commons-codec/PhoneticEngineFuzzer.java). Therefore, I manually created a valid input to be the binary data representing `Hello`. The resulting maximized crashing input is `b'elloeeeee7%'`. See `example_ddmod4.sh` for the list of commands that I ran.
 
 ### Example 4.2
 This commons-codec [This bug](https://issues.oss-fuzz.com/issues/42530537) has crash_type "Uncaught exception". The crashing input can be directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=6195774643634176). This bug is not available on ARVO, so I had to reproduce from OSS Fuzz. Unfortunately I wasn't able to reproduce the bug successfully. Here are some attempts I made for reproducing the bug. 
