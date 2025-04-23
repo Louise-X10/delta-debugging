@@ -10,7 +10,7 @@ The `DDMods` class has an argument `.binary` that signals whether it accepts str
 
 P.S. Note that the valid input here may or may not cause the program to crash. We only call it "valid" because it is chosen from a seed corpus or is an input that user would expect, hence is a well-structured input that should not crash the program. If it does indeed crash the program, then it only signifies that the bug in the program affects these well-structured inputs as well. 
 
-P.S. While my delta-debugger performs minimization on the given failing input, they are often already minimized when output by fuzzers. 
+P.S. While my delta-debugger performs minimization on the given failing input, sometimes they are already minimal when output by fuzzers. Thus, I also have an option to skip the minimization step, by setting `skipmin=True` when calling `ddiff_max`. It is set to False for all my evaluations to be safe. 
 
 # Examples
 

@@ -238,16 +238,17 @@ class DDMods(DD):
         return t, csubr
 
     # * Delta debugging mods for string1 (failing) and string2 (passing)
-    def ddiff_max(self, string1, string2):
+    def ddiff_max(self, string1, string2, skipmin=False):
         # if self.verbose:
-        print('Minimizing failure input: "{}"'.format(string1))
-        deltas = self.str_to_deltas(string1)
-        c = self.ddmin(deltas)              # Invoke DDMIN
-        minimal = self.deltas_to_str(c)
-        # if self.verbose:
-        print('Found minimal failure input: "{}"'.format(minimal))
+        if not skipmin:
+            print('Minimizing failure input: "{}"'.format(string1))
+            deltas = self.str_to_deltas(string1)
+            c = self.ddmin(deltas)              # Invoke DDMIN
+            minimal = self.deltas_to_str(c)
+            # if self.verbose:
+            print('Found minimal failure input: "{}"'.format(minimal))
+            string1 = minimal
 
-        string1 = minimal
         mods = self.get_mods(string1, string2)
         c1 = self.str_to_deltas(string1)
         c2 = self.str_to_deltas(string2)
