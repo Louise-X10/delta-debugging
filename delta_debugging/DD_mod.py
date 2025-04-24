@@ -358,8 +358,8 @@ class DDMods(DD):
                     next_n = 2
 
                     if self.debug_dd:
-                        print("dd: increase c1 to", len(next_c1), "deltas:",)
-                        print(self.pretty(next_c1))
+                        print("dd: reduce c1 to", self.pretty(next_c1))
+                        # print("dd: increase c1 to", len(next_c1), "deltas:",)
                         # print(self.pretty(next_mods))
                     break
                 elif t == self.PASS:
@@ -370,10 +370,11 @@ class DDMods(DD):
             for j in range(n):
                 i = j % n
 
-                if self.debug_dd:
-                    print("dd: trying", self.pretty(cs[i]))
-
                 cbar = self.__modsminus(c, cs[i])
+
+                if self.debug_dd:
+                    print("dd: trying", self.pretty(self.__modsapply(c1, cbar)))
+
                 (t, csub) = self.test_mods_and_resolve(
                     c1, cbar, c2, self.REMOVE)
                 # csub = self.__listunion(c1, csub)
@@ -387,8 +388,9 @@ class DDMods(DD):
                     next_n = 2
 
                     if self.debug_dd:
-                        print("dd: increase c1 to", len(next_c1), "deltas:",)
-                        print(self.pretty(next_mods))
+                        print("dd: reduce c1 to", self.pretty(next_c1))
+                        # print("dd: increase c1 to", len(next_c1), "deltas:",)
+                        # print(self.pretty(next_mods))
                     break
                 elif t == self.PASS:
                     # Not found
