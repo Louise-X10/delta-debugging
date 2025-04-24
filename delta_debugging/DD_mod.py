@@ -140,52 +140,15 @@ class DDMods(DD):
         remove_dict = {idx: char for idx, char in removed}
         deltas = [(idx, char, order)
                   for idx, char, order in deltas if idx not in remove_dict]
-        # for start_idx, chars in removed:
-        #     # Find the insert index in deltas
-        #     for i, (idx, _) in enumerate(deltas):
-        #         if idx == start_idx:
-        #             # Remove each character from the given start index
-        #             for i in range(len(chars)):
-        #                 if start_idx + i in delta_dict:
-        #                     # Check the deleted char is the one speficied by removed
-        #                     assert delta_dict[start_idx + i] == chars[i]
-        #                     del delta_dict[start_idx + i]
-        # deltas = delta_dict.items()
-        # deltas = sorted(delta_dict.items())
         return deltas
 
     def __apply_insert(self, deltas, inserted):
-        # Build dictionary to store insertions at the same index
         deltas = deltas + inserted
         deltas.sort(key=lambda x: (x[0], x[2]))
         return deltas
 
-        # insertions = {}
-        # for insert_idx, char, order in inserted:
-        #     if insert_idx in insertions:
-        #         insertions[insert_idx].append((order,char))
-        #     else:
-        #         insertions[insert_idx] = [(order,char)]
-        # # Sort the insertions by index in reverse order
-        # for insert_idx in sorted(insertions.keys(), reverse=True):
-        #     chars = sorted(insertions[insert_idx], key=lambda x: x[0])
-        #     # Find the insert index in deltas in reversed order
-        #     for i, (idx, _, _) in enumerate(reversed(deltas)):
-        #         if idx == insert_idx:
-        #             # Insert chars in reversed order
-        #             for order, char in (chars):
-        #                 deltas.insert(len(deltas) - i, (idx, char, order))
-        #             break
-        # return deltas
-
     def __apply_prepend(self, deltas, prepend):
         deltas = prepend + deltas
-
-        # Sort prepend deltas by index (leave other deltas in original order)
-        # negative = [entry for entry in deltas if entry[0] < 0]
-        # non_negative = [entry for entry in deltas if entry[0] >= 0]
-        # negative_sorted = sorted(negative, key=lambda x: (x[0], x[2]))
-        # deltas = negative_sorted + non_negative
         deltas.sort(key=lambda x: (x[0], x[2]))
         return deltas
 
