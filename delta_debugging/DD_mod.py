@@ -157,7 +157,7 @@ class DDMods(DD):
     def __apply_insert(self, deltas, inserted):
         # Build dictionary to store insertions at the same index
         insertions = {}
-        for insert_idx, order, char in inserted:
+        for insert_idx, char, order in inserted:
             if insert_idx in insertions:
                 insertions[insert_idx].append((order,char))
             else:
