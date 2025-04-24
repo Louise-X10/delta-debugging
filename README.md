@@ -22,17 +22,17 @@ P.S. `example_dd.ipynb` is a simple demonstration for how the original delta deb
 
 ### Example 1
 
-This target program takes string as inputs, and crashes if the input doesn't have `<` or `;`, cotains one `1` and three `2`.  The crashing input is ` "1222>"` which can be minimized to `"1222"`. The valid input is `"<55513>;"`. The resulting maximized crashing input is `551222`. 
+This target program takes string as inputs, and crashes if the input doesn't have `<` or `;`, cotains one `1` and three `2`.  The crashing input is ` "1222>"` which can be minimized to `"1222"`. The valid input is `"<55513>;"`. The resulting maximized crashing input is `55512223>`, which is 5 changes away from the valid input (original crashing input is 9 changes away). 
 
 ### Example 2
 
-This target program takes JSON inputs, and crashes if the input contains a list value. The crashing input is `{"baz": 7, "baaa": [1, 2]}` which can be minimized to `"{"":7,"":[]}"`. The valid input is `{ "foo": "bar" }`. The resulting maximized crashing input is `{ "foo": 7,"":[]}`. 
+This target program takes JSON inputs, and crashes if the input contains a list value. The crashing input is `{"baz": 7, "baaa": [1, 2]}` which can be minimized to `"{"":7,"":[]}"`. The valid input is `{ "foo": "bar" }`. The resulting maximized crashing input is `{ "foo": 7,"bar":[]}`, which is 5 changes away from the valid input (original crashing input is 20 changes away). 
 
 ## Boringssl Examples
 
 I took [boringssl](https://github.com/google/boringssl/tree) as an example to see how well my delta-debugger works on real-world bugs found by OSS Fuzz. I tested on three kinds of bugs discovered, all of which can be reproduced using [ARVO](https://github.com/n132/ARVO-Meta/tree/main/).
 
-### Example 3
+### Example 3.1
 
 This boringssl [bug](https://github.com/n132/ARVO-Meta/blob/main/meta/2692.json) has crash_type "Incorrect-function-pointer-type". The crashing input can be found at [OSS Fuzz issues](https://issues.oss-fuzz.com/issues/42488781), or directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=6195774643634176). To reproduce the bug, run `arvo` in the following Docker container, 
 
@@ -65,7 +65,7 @@ See `example_ddmod3.3.sh` for the list of commands I ran. The crashing input is 
 
 ## Apache-Commons-Code Examples
 
-### Example 4
+### Example 4.1
 
 This commons-codec [bug](https://issues.oss-fuzz.com/issues/42530374) has crash_type "Security exception". The crashing input can be directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=6726368628703232), or reproduced by running `arvo` in the following Docker container, 
 
