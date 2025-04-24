@@ -308,8 +308,8 @@ class DDMods(DD):
             # c = self.__listminus(c2, c1)
             # c = self.__listunion(c2, c1)
 
-            if self.debug_dd:
-                print("dd: c2 - c1 =", self.pretty(c))
+            # if self.debug_dd:
+                # print("dd: c2 - c1 =", self.pretty(c))
 
             if n > len(c):
                 # No further minimizing
@@ -341,7 +341,9 @@ class DDMods(DD):
                 i = j % n
 
                 if self.debug_dd:
-                    print("dd: trying", self.pretty(cs[i]))
+                    # print("dd: trying", self.pretty(cs[i]))
+                    print("dd: trying", self.pretty(self.__modsapply(c1, cs[i])))
+                    
 
                 (t, csub) = self.test_mods_and_resolve(
                     c1, cs[i], c2, self.REMOVE)
@@ -357,7 +359,8 @@ class DDMods(DD):
 
                     if self.debug_dd:
                         print("dd: increase c1 to", len(next_c1), "deltas:",)
-                        print(self.pretty(next_mods))
+                        print(self.pretty(next_c1))
+                        # print(self.pretty(next_mods))
                     break
                 elif t == self.PASS:
                     # Not found
