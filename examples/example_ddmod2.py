@@ -55,3 +55,6 @@ string2 = '{ "foo": "bar" }'
 print("The minimally different failure to  ",
       mydd.pretty(c2), " is ", mydd.pretty(c1))
 print("The distance to valid input is: ", len(c))
+
+mods = mydd.get_mods(test_input, string2)
+print("Original distance to valid input is: ", len(mods))

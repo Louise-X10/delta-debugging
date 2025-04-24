@@ -79,5 +79,8 @@ if __name__ == "__main__":
     with open(save_path, "wb") as f:
         f.write(mydd.pretty(c1))
     
-    print("The distance to valid input is: ", len(c))
+    print("Minimized distance to valid input is: ", len(c))
+
+    mods = mydd.get_mods(crashing, passing)
+    print("Original distance to valid input is: ", len(mods))
 
