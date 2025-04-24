@@ -80,6 +80,7 @@ if __name__ == "__main__":
         f.write(mydd.pretty(c1))
     
     print("Minimized distance to valid input is: ", len(c))
+    print(c)
 
     mods = mydd.get_mods(crashing, passing)
     print("Original distance to valid input is: ", len(mods))
