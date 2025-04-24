@@ -83,4 +83,5 @@ if __name__ == "__main__":
 
     mods = mydd.get_mods(crashing, passing)
     print("Original distance to valid input is: ", len(mods))
+    print(mods)
 
