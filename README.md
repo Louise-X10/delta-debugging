@@ -40,7 +40,7 @@ This boringssl [bug](https://github.com/n132/ARVO-Meta/blob/main/meta/2692.json)
 docker run -it n132/arvo:2692-vul bash
 ```
 
-Valid inputs can be found at the seed corpus directory `boringssl/fuzz/server_corpus`. The target program is the `server` fuzzer. For example, see `example_ddmod3.sh` for the list of commands I ran to launch delta-debugger. Unfortunately, it doesn't seem to make any improvements on the crashing input. Hence the resulting maximized crashing input is the same as the original crashing input. 
+Valid inputs can be found at the seed corpus directory `boringssl/fuzz/server_corpus`. The target program is the `server` fuzzer. For example, see `example_ddmod3.sh` for the list of commands I ran to launch delta-debugger. The resulting maximized crashing input is closer to the original crashing input, improving from 410 edit distance to 396 edit distance. 
 
 ### Example 3.2
 
@@ -51,18 +51,17 @@ docker run -it n132/arvo:10140-vul bash
 ```
 
 See `example_ddmod3.2.sh` for the list of commands I ran.
-The crashing input is `b' '`, which is already minimal. The valid input is `b'-----BEGIN O--------'` (which actually crashes the prgram as well), and the resulting maximized crashing input is `b'----- '`. 
-
+The crashing input is `b' '`, which is already minimal. The valid input is `b'-----BEGIN O--------'` (which actually crashes the prgram as well), and the resulting maximized crashing input is `b'-----BEG '`, which is 11 changes away from the valid input (originally 19 changes away). 
 
 ### Example 3.3
 
-This boringssl [bug](https://github.com/n132/ARVO-Meta/blob/main/meta/9808.json) has crash_type "Use-of-uninitialized-value". The crashing input can be directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=5807097051611136). To reproduce the bug, run `arvo` in the following Docker container, 
+This boringssl [bug](https://github.com/n132/ARVO-Meta/blob/main/meta/9808.json) has crash_type "Heap-buffer-overflow READ 1". The crashing input can be directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=5807097051611136). To reproduce the bug, run `arvo` in the following Docker container, 
 
 ```
 docker run -it n132/arvo:9808-vul bash
 ```
 
-See `example_ddmod3.3.sh` for the list of commands I ran. The crashing input is `b'-'`, which is already minimal. After calling my delta-debugger, I obtain a maximal crashing input that is much closer to the valid input. 
+See `example_ddmod3.3.sh` for the list of commands I ran. The crashing input is `b'-'`, which is already minimal. After calling my delta-debugger, I obtain a maximal crashing input that is much closer to the valid input, being only 1 edit distance away (originally 126 edits away). 
 
 ## Apache-Commons-Code Examples
 
