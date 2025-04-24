@@ -193,7 +193,7 @@ class DDMods(DD):
 
     # * Test mods
     # csub = c1 = failing input
-    # r = mods = modifications towards valid input
+    # r = mods = (subset of) modifications towards valid input
     # c = c2 = valid input
     def test_mods_and_resolve(self, csub, r, c, direction):
         """Repeat testing 'modify CSUB with R' while unresolved."""
@@ -271,12 +271,12 @@ class DDMods(DD):
         n = 2
 
         if self.debug_dd:
-            print("ddiff(" + self.pretty(c1) + ", " + str(n) + ")...")
+            print("ddiff(", self.pretty(c1), ", ", str(n), ")...")
 
         outcome = self._ddiff_mods(c1, c2, mods, n)
 
         if self.debug_dd:
-            print("ddiff(" + self.pretty(c1) + ", " + str(n) + ") = " +
+            print("ddiff(", self.pretty(c1), ", ", str(n), ") = ", 
                   outcome)
 
         return outcome
