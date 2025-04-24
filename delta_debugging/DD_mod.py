@@ -68,7 +68,7 @@ class DDMods(DD):
                 if code == ' ':
                     idx += 1
                 elif code == '+':
-                    order = insert_orders.get(idx, 0)
+                    order = insert_orders.get(idx, 1)
                     mods.append((idx, val.encode('latin1'), order, 'ADD'))
                     insert_orders[idx] = order + 1
                 elif code == '-':
@@ -86,7 +86,7 @@ class DDMods(DD):
                     idx += 1
                     prepend = False
                 elif code == '+':  # Added character
-                    order = insert_orders.get(idx, 0)
+                    order = insert_orders.get(idx, 1)
                     mods.append((idx, char, order, self.ADD))
                     insert_orders[idx] = order + 1
                 # elif d.startswith("? "):  # Changed character
