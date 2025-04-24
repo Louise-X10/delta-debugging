@@ -22,3 +22,6 @@ python3 example_ddmod4.py $CRASH_INPUT $VALID_INPUT $TARGET
 # b'Hello'
 # Maximal crashing input:
 # b'elloeee7%'
+
+# Minimized distance to valid input is:  5
+# Original distance to valid input is:  12
