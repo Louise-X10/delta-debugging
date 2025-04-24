@@ -51,6 +51,7 @@ class DDMods(DD):
     # * Modifications
     # Addition: the index after which to insert
     # Removal: the index of the character to remove
+    # Keeps track of index to insert/remove, and order of insertion when inserting in middle （i.e. not prepending)
     def get_mods(self, string1, string2):
         # Get list of modifications to change string1 into string2
         if self.binary:
@@ -60,20 +61,24 @@ class DDMods(DD):
             diff = list(difflib.ndiff(string1, string2))
             mods = []
             idx = -1
+            insert_orders = {}
             for d in diff:
                 code = d[0]
                 val = d[2]
                 if code == ' ':
                     idx += 1
                 elif code == '+':
-                    mods.append((idx, val.encode('latin1'), 'ADD'))
+                    order = insert_orders.get(idx, 0)
+                    mods.append((idx, order, val.encode('latin1'), 'ADD'))
+                    insert_orders[idx] = order + 1
                 elif code == '-':
                     idx += 1
-                    mods.append((idx, val.encode('latin1'), 'REMOVE'))
+                    mods.append((idx, 0, val.encode('latin1'), 'REMOVE'))
         else:
             diff = list(difflib.ndiff(string1, string2))
             mods = []
             idx = -1
+            insert_orders = {}
             for d in diff:
                 code = d[0]
                 char = d[2:]
@@ -81,18 +86,20 @@ class DDMods(DD):
                     idx += 1
                     prepend = False
                 elif code == '+':  # Added character
-                    mods.append((idx, char, self.ADD))
+                    order = insert_orders.get(idx, 0)
+                    mods.append((idx, order, char, self.ADD))
+                    insert_orders[idx] = order + 1
                 # elif d.startswith("? "):  # Changed character
                 #     mods.append((idx, d[2], self.CHANGE))
                 elif code == '-':  # Removed character
                     idx += 1
-                    mods.append((idx, char, self.REMOVE))
+                    mods.append((idx, 0, char, self.REMOVE))
 
         # * Modify prepend indices
         prepend = [mod for mod in mods if mod[0] < 0]
         plen = len(prepend)
-        prepend = [(-plen + i, val, op)
-                   for i, (_, val, op) in enumerate(prepend)]
+        prepend = [(-plen + i, 0, char, op)
+                   for i, (_, _, char, op) in enumerate(prepend)]
         mods[:plen] = prepend
         return mods
 
@@ -120,11 +127,11 @@ class DDMods(DD):
         prepend = []
         inserted = []
         removed = []
-        for pos, char, op in mods:
+        for pos, order, char, op in mods:
             if pos < 0:
                 prepend.append((pos, char))  # Collect elements with index -1
             elif op == self.ADD:
-                inserted.append((pos, char))
+                inserted.append((pos, order, char))
             elif op == self.REMOVE:
                 removed.append((pos, char))
         return prepend, inserted, removed
@@ -150,19 +157,19 @@ class DDMods(DD):
     def __apply_insert(self, deltas, inserted):
         # Build dictionary to store insertions at the same index
         insertions = {}
-        for insert_idx, char in inserted:
+        for insert_idx, order, char in inserted:
             if insert_idx in insertions:
-                insertions[insert_idx].append(char)
+                insertions[insert_idx].append((order,char))
             else:
-                insertions[insert_idx] = [char]
+                insertions[insert_idx] = [(order,char)]
         # Sort the insertions by index in reverse order
         for insert_idx in sorted(insertions.keys(), reverse=True):
-            chars = insertions[insert_idx]
+            chars = sorted(insertions[insert_idx], key=lambda x: x[0])
             # Find the insert index in deltas in reversed order
             for i, (idx, _) in enumerate(reversed(deltas)):
                 if idx == insert_idx:
                     # Insert chars in reversed order
-                    for char in (chars):
+                    for _, char in (chars):
                         deltas.insert(len(deltas) - i, (idx, char))
                     break
         return deltas
