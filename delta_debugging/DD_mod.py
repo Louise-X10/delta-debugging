@@ -129,7 +129,7 @@ class DDMods(DD):
         removed = []
         for pos, char, order, op in mods:
             if pos < 0:
-                prepend.append((pos, char))  # Collect elements with index -1
+                prepend.append((pos, char, order))  # Collect elements with index -1
             elif op == self.ADD:
                 inserted.append((pos, char, order))
             elif op == self.REMOVE:
@@ -156,8 +156,7 @@ class DDMods(DD):
 
     def __apply_insert(self, deltas, inserted):
         # Build dictionary to store insertions at the same index
-        inserted_chars = [(entry[0], entry[1], entry[2]) for entry in sorted(inserted, key=lambda x: (x[0], x[2]))]
-        deltas = deltas + inserted_chars
+        deltas = deltas + inserted
         deltas.sort(key=lambda x: (x[0], x[2]))
         return deltas
 
@@ -180,8 +179,7 @@ class DDMods(DD):
         # return deltas
 
     def __apply_prepend(self, deltas, prepend):
-        prepend_chars = [(entry[0], entry[1], entry[2]) for entry in prepend]
-        deltas = prepend_chars + deltas
+        deltas = prepend + deltas
 
         # Sort prepend deltas by index (leave other deltas in original order)
         # negative = [entry for entry in deltas if entry[0] < 0]
