@@ -22,17 +22,17 @@ P.S. `example_dd.ipynb` is a simple demonstration for how the original delta deb
 
 ### Example 1
 
-This target program takes string as inputs, and crashes if the input doesn't have `<` or `;`, cotains one `1` and three `2`.  The crashing input is ` "1222>"` which can be minimized to `"1222"`. The valid input is `"<55513>;"`. The resulting maximized crashing input is `551222`. 
+This target program takes string as inputs, and crashes if the input doesn't have `<` or `;`, cotains one `1` and three `2`.  The crashing input is ` "1222>"` which can be minimized to `"1222"`. The valid input is `"<55513>;"`. The resulting maximized crashing input is `55512223>`, which is 5 changes away from the valid input (original crashing input is 9 changes away). 
 
 ### Example 2
 
-This target program takes JSON inputs, and crashes if the input contains a list value. The crashing input is `{"baz": 7, "baaa": [1, 2]}` which can be minimized to `"{"":7,"":[]}"`. The valid input is `{ "foo": "bar" }`. The resulting maximized crashing input is `{ "foo": 7,"":[]}`. 
+This target program takes JSON inputs, and crashes if the input contains a list value. The crashing input is `{"baz": 7, "baaa": [1, 2]}` which can be minimized to `"{"":7,"":[]}"`. The valid input is `{ "foo": "bar" }`. The resulting maximized crashing input is `{ "foo": 7,"bar":[]}`, which is 5 changes away from the valid input (original crashing input is 20 changes away). 
 
 ## Boringssl Examples
 
 I took [boringssl](https://github.com/google/boringssl/tree) as an example to see how well my delta-debugger works on real-world bugs found by OSS Fuzz. I tested on three kinds of bugs discovered, all of which can be reproduced using [ARVO](https://github.com/n132/ARVO-Meta/tree/main/).
 
-### Example 3
+### Example 3.1
 
 This boringssl [bug](https://github.com/n132/ARVO-Meta/blob/main/meta/2692.json) has crash_type "Incorrect-function-pointer-type". The crashing input can be found at [OSS Fuzz issues](https://issues.oss-fuzz.com/issues/42488781), or directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=6195774643634176). To reproduce the bug, run `arvo` in the following Docker container, 
 
@@ -40,7 +40,7 @@ This boringssl [bug](https://github.com/n132/ARVO-Meta/blob/main/meta/2692.json)
 docker run -it n132/arvo:2692-vul bash
 ```
 
-Valid inputs can be found at the seed corpus directory `boringssl/fuzz/server_corpus`. The target program is the `server` fuzzer. For example, see `example_ddmod3.sh` for the list of commands I ran to launch delta-debugger. Unfortunately, it doesn't seem to make any improvements on the crashing input. Hence the resulting maximized crashing input is the same as the original crashing input. 
+Valid inputs can be found at the seed corpus directory `boringssl/fuzz/server_corpus`. The target program is the `server` fuzzer. For example, see `example_ddmod3.sh` for the list of commands I ran to launch delta-debugger. The resulting maximized crashing input is closer to the original crashing input, improving from 410 edit distance to 396 edit distance. 
 
 ### Example 3.2
 
@@ -51,22 +51,21 @@ docker run -it n132/arvo:10140-vul bash
 ```
 
 See `example_ddmod3.2.sh` for the list of commands I ran.
-The crashing input is `b' '`, which is already minimal. The valid input is `b'-----BEGIN O--------'` (which actually crashes the prgram as well), and the resulting maximized crashing input is `b'----- '`. 
-
+The crashing input is `b' '`, which is already minimal. The valid input is `b'-----BEGIN O--------'` (which actually crashes the prgram as well), and the resulting maximized crashing input is `b'-----BEG '`, which is 11 changes away from the valid input (originally 19 changes away). 
 
 ### Example 3.3
 
-This boringssl [bug](https://github.com/n132/ARVO-Meta/blob/main/meta/9808.json) has crash_type "Use-of-uninitialized-value". The crashing input can be directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=5807097051611136). To reproduce the bug, run `arvo` in the following Docker container, 
+This boringssl [bug](https://github.com/n132/ARVO-Meta/blob/main/meta/9808.json) has crash_type "Heap-buffer-overflow READ 1". The crashing input can be directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=5807097051611136). To reproduce the bug, run `arvo` in the following Docker container, 
 
 ```
 docker run -it n132/arvo:9808-vul bash
 ```
 
-See `example_ddmod3.3.sh` for the list of commands I ran. The crashing input is `b'-'`, which is already minimal. After calling my delta-debugger, I obtain a maximal crashing input that is much closer to the valid input. 
+See `example_ddmod3.3.sh` for the list of commands I ran. The crashing input is `b'-'`, which is already minimal. After calling my delta-debugger, I obtain a maximal crashing input that is much closer to the valid input, being only 1 edit distance away (originally 126 edits away). 
 
 ## Apache-Commons-Code Examples
 
-### Example 4
+### Example 4.1
 
 This commons-codec [bug](https://issues.oss-fuzz.com/issues/42530374) has crash_type "Security exception". The crashing input can be directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=6726368628703232), or reproduced by running `arvo` in the following Docker container, 
 
@@ -77,7 +76,8 @@ To reproduce the bug,
 docker run -it n132/arvo:64367-vul arvo
 ```
 
-Run `arvo` to reproduce the bug, which would print the seed used and save the failure reproducer file. The crashing input is `b'7%eeeee7%'`. The target program is the `PhoeneticEngineFuzzer` program, and can be seen [here](https://github.com/google/oss-fuzz/blob/master/projects/apache-commons-codec/PhoneticEngineFuzzer.java). Therefore, I manually created a valid input to be the binary data representing `Hello`. The resulting maximized crashing input is `b'elloeee7%'`. See `example_ddmod4.sh` for the list of commands that I ran.
+Run `arvo` to reproduce the bug, which would print the seed used and save the failure reproducer file. The crashing input is `b'7%eeeee7%'`. The target program is the `PhoeneticEngineFuzzer` program, and can be seen [here](https://github.com/google/oss-fuzz/blob/master/projects/apache-commons-codec/PhoneticEngineFuzzer.java). Therefore, I manually created a valid input to be the binary data representing `Hello`. The resulting maximized crashing input is `b'Helloee7%'`, so edit distance to valid input reduced from 12 to 4. See `example_ddmod4.sh` for the list of commands that I ran.
+
 ### Example 4.2
 This commons-codec [This bug](https://issues.oss-fuzz.com/issues/42530537) has crash_type "Uncaught exception". The crashing input can be directly downloaded from [here](https://oss-fuzz.com/download?testcase_id=6195774643634176). This bug is not available on ARVO, so I had to reproduce from OSS Fuzz. Unfortunately I wasn't able to reproduce the bug successfully. Here are some attempts I made for reproducing the bug. 
 

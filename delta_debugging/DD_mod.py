@@ -33,10 +33,10 @@ class DDMods(DD):
     def str_to_deltas(self, test_input):
         if self.binary:
             deltas = list(
-                map(lambda x: (x, bytes([test_input[x]])), range(len(test_input))))
+                map(lambda x: (x, bytes([test_input[x]]), 0), range(len(test_input))))
         else:
             deltas = list(
-            map(lambda x: (x, test_input[x]), range(len(test_input))))
+            map(lambda x: (x, test_input[x], 0), range(len(test_input))))
         # print("Str to deltas: ", deltas)
         return deltas
 
@@ -51,6 +51,7 @@ class DDMods(DD):
     # * Modifications
     # Addition: the index after which to insert
     # Removal: the index of the character to remove
+    # Keeps track of index to insert/remove, and order of insertion when inserting in middle （i.e. not prepending)
     def get_mods(self, string1, string2):
         # Get list of modifications to change string1 into string2
         if self.binary:
@@ -60,20 +61,24 @@ class DDMods(DD):
             diff = list(difflib.ndiff(string1, string2))
             mods = []
             idx = -1
+            insert_orders = {}
             for d in diff:
                 code = d[0]
                 val = d[2]
                 if code == ' ':
                     idx += 1
                 elif code == '+':
-                    mods.append((idx, val.encode('latin1'), 'ADD'))
+                    order = insert_orders.get(idx, 1)
+                    mods.append((idx, val.encode('latin1'), order, 'ADD'))
+                    insert_orders[idx] = order + 1
                 elif code == '-':
                     idx += 1
-                    mods.append((idx, val.encode('latin1'), 'REMOVE'))
+                    mods.append((idx, val.encode('latin1'), 0, 'REMOVE'))
         else:
             diff = list(difflib.ndiff(string1, string2))
             mods = []
             idx = -1
+            insert_orders = {}
             for d in diff:
                 code = d[0]
                 char = d[2:]
@@ -81,18 +86,20 @@ class DDMods(DD):
                     idx += 1
                     prepend = False
                 elif code == '+':  # Added character
-                    mods.append((idx, char, self.ADD))
+                    order = insert_orders.get(idx, 1)
+                    mods.append((idx, char, order, self.ADD))
+                    insert_orders[idx] = order + 1
                 # elif d.startswith("? "):  # Changed character
                 #     mods.append((idx, d[2], self.CHANGE))
                 elif code == '-':  # Removed character
                     idx += 1
-                    mods.append((idx, char, self.REMOVE))
+                    mods.append((idx, char, 0, self.REMOVE))
 
         # * Modify prepend indices
         prepend = [mod for mod in mods if mod[0] < 0]
         plen = len(prepend)
-        prepend = [(-plen + i, val, op)
-                   for i, (_, val, op) in enumerate(prepend)]
+        prepend = [(-plen + i, char, 0, op)
+                   for i, (_, char, _, op) in enumerate(prepend)]
         mods[:plen] = prepend
         return mods
 
@@ -120,56 +127,29 @@ class DDMods(DD):
         prepend = []
         inserted = []
         removed = []
-        for pos, char, op in mods:
+        for pos, char, order, op in mods:
             if pos < 0:
-                prepend.append((pos, char))  # Collect elements with index -1
+                prepend.append((pos, char, order))  # Collect elements with index -1
             elif op == self.ADD:
-                inserted.append((pos, char))
+                inserted.append((pos, char, order))
             elif op == self.REMOVE:
                 removed.append((pos, char))
         return prepend, inserted, removed
 
     def __apply_remove(self, deltas, removed):
         remove_dict = {idx: char for idx, char in removed}
-        deltas = [(idx, char)
-                  for idx, char in deltas if idx not in remove_dict]
-        # for start_idx, chars in removed:
-        #     # Find the insert index in deltas
-        #     for i, (idx, _) in enumerate(deltas):
-        #         if idx == start_idx:
-        #             # Remove each character from the given start index
-        #             for i in range(len(chars)):
-        #                 if start_idx + i in delta_dict:
-        #                     # Check the deleted char is the one speficied by removed
-        #                     assert delta_dict[start_idx + i] == chars[i]
-        #                     del delta_dict[start_idx + i]
-        # deltas = delta_dict.items()
-        # deltas = sorted(delta_dict.items())
+        deltas = [(idx, char, order)
+                  for idx, char, order in deltas if idx not in remove_dict]
         return deltas
 
     def __apply_insert(self, deltas, inserted):
-        # Build dictionary to store insertions at the same index
-        insertions = {}
-        for insert_idx, char in inserted:
-            if insert_idx in insertions:
-                insertions[insert_idx].append(char)
-            else:
-                insertions[insert_idx] = [char]
-        # Sort the insertions by index in reverse order
-        for insert_idx in sorted(insertions.keys(), reverse=True):
-            chars = insertions[insert_idx]
-            # Find the insert index in deltas in reversed order
-            for i, (idx, _) in enumerate(reversed(deltas)):
-                if idx == insert_idx:
-                    # Insert chars in reversed order
-                    for char in (chars):
-                        deltas.insert(len(deltas) - i, (idx, char))
-                    break
+        deltas = deltas + inserted
+        deltas.sort(key=lambda x: (x[0], x[2]))
         return deltas
 
     def __apply_prepend(self, deltas, prepend):
-        prepend_chars = [(entry[0], entry[1]) for entry in prepend]
-        deltas = prepend_chars + deltas
+        deltas = prepend + deltas
+        deltas.sort(key=lambda x: (x[0], x[2]))
         return deltas
 
     def __apply_mods(self, deltas, mods):
@@ -192,7 +172,7 @@ class DDMods(DD):
 
     # * Test mods
     # csub = c1 = failing input
-    # r = mods = modifications towards valid input
+    # r = mods = (subset of) modifications towards valid input
     # c = c2 = valid input
     def test_mods_and_resolve(self, csub, r, c, direction):
         """Repeat testing 'modify CSUB with R' while unresolved."""
@@ -270,12 +250,12 @@ class DDMods(DD):
         n = 2
 
         if self.debug_dd:
-            print("ddiff(" + self.pretty(c1) + ", " + str(n) + ")...")
+            print("ddiff(", self.pretty(c1), ", ", str(n), ")...")
 
         outcome = self._ddiff_mods(c1, c2, mods, n)
 
         if self.debug_dd:
-            print("ddiff(" + self.pretty(c1) + ", " + str(n) + ") = " +
+            print("ddiff(", self.pretty(c1), ", ", str(n), ") = ", 
                   outcome)
 
         return outcome
@@ -307,8 +287,8 @@ class DDMods(DD):
             # c = self.__listminus(c2, c1)
             # c = self.__listunion(c2, c1)
 
-            if self.debug_dd:
-                print("dd: c2 - c1 =", self.pretty(c))
+            # if self.debug_dd:
+                # print("dd: c2 - c1 =", self.pretty(c))
 
             if n > len(c):
                 # No further minimizing
@@ -335,12 +315,15 @@ class DDMods(DD):
             next_mods = c[:]
             next_n = n
 
-            # Check subsets
+            
             for j in range(n):
                 i = j % n
 
+                # Check subsets
                 if self.debug_dd:
-                    print("dd: trying", self.pretty(cs[i]))
+                    # print("dd: trying", self.pretty(cs[i]))
+                    print("dd: trying", self.pretty(self.__modsapply(c1, cs[i])))
+                    
 
                 (t, csub) = self.test_mods_and_resolve(
                     c1, cs[i], c2, self.REMOVE)
@@ -355,26 +338,25 @@ class DDMods(DD):
                     next_n = 2
 
                     if self.debug_dd:
-                        print("dd: increase c1 to", len(next_c1), "deltas:",)
-                        print(self.pretty(next_mods))
+                        print("dd: reduce c1 to", self.pretty(next_c1))
+                        # print("dd: increase c1 to", len(next_c1), "deltas:",)
+                        # print(self.pretty(next_mods))
                     break
                 elif t == self.PASS:
                     # Not found
                     progress = 0
 
-            # Check complements
-            for j in range(n):
-                i = j % n
+                # Check complements
+                cbar = self.__modsminus(c, cs[i])
 
                 if self.debug_dd:
-                    print("dd: trying", self.pretty(cs[i]))
+                    print("dd: trying", self.pretty(self.__modsapply(c1, cbar)))
 
-                cbar = self.__modsminus(c, cs[i])
-                (t, csub) = self.test_mods_and_resolve(
+                (tsub, csub) = self.test_mods_and_resolve(
                     c1, cbar, c2, self.REMOVE)
                 # csub = self.__listunion(c1, csub)
-
-                if t == self.FAIL:
+                
+                if tsub == self.FAIL:
                     # Found
                     progress = 1
                     # * Change lower bound to new failing test case
@@ -383,10 +365,11 @@ class DDMods(DD):
                     next_n = 2
 
                     if self.debug_dd:
-                        print("dd: increase c1 to", len(next_c1), "deltas:",)
-                        print(self.pretty(next_mods))
+                        print("dd: reduce c1 to", self.pretty(next_c1))
+                        # print("dd: increase c1 to", len(next_c1), "deltas:",)
+                        # print(self.pretty(next_mods))
                     break
-                elif t == self.PASS:
+                elif tsub == self.PASS:
                     # Not found
                     progress = 0
 

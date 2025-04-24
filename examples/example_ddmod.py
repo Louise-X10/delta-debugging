@@ -38,3 +38,7 @@ test_input = "1222>"
 string2 = "<55513>;"
 mydd = TestDD()
 (c, c1, c2) = mydd.ddiff_max(test_input, string2)
+print("The distance to valid input is: ", len(c))
+
+mods = mydd.get_mods(test_input, string2)
+print("Original distance to valid input is: ", len(mods))
