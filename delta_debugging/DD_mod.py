@@ -33,10 +33,10 @@ class DDMods(DD):
     def str_to_deltas(self, test_input):
         if self.binary:
             deltas = list(
-                map(lambda x: (x, bytes([test_input[x]])), range(len(test_input))))
+                map(lambda x: (x, bytes([test_input[x]]), 0), range(len(test_input))))
         else:
             deltas = list(
-            map(lambda x: (x, test_input[x]), range(len(test_input))))
+            map(lambda x: (x, test_input[x], 0), range(len(test_input))))
         # print("Str to deltas: ", deltas)
         return deltas
 
@@ -138,8 +138,8 @@ class DDMods(DD):
 
     def __apply_remove(self, deltas, removed):
         remove_dict = {idx: char for idx, char in removed}
-        deltas = [(idx, char)
-                  for idx, char in deltas if idx not in remove_dict]
+        deltas = [(idx, char, order)
+                  for idx, char, order in deltas if idx not in remove_dict]
         # for start_idx, chars in removed:
         #     # Find the insert index in deltas
         #     for i, (idx, _) in enumerate(deltas):
@@ -169,19 +169,19 @@ class DDMods(DD):
             for i, (idx, _) in enumerate(reversed(deltas)):
                 if idx == insert_idx:
                     # Insert chars in reversed order
-                    for _, char in (chars):
-                        deltas.insert(len(deltas) - i, (idx, char))
+                    for order, char in (chars):
+                        deltas.insert(len(deltas) - i, (idx, char, order))
                     break
         return deltas
 
     def __apply_prepend(self, deltas, prepend):
-        prepend_chars = [(entry[0], entry[1]) for entry in prepend]
+        prepend_chars = [(entry[0], entry[1], entry[2]) for entry in prepend]
         deltas = prepend_chars + deltas
 
         # Sort prepend deltas by index (leave other deltas in original order)
         negative = [entry for entry in deltas if entry[0] < 0]
         non_negative = [entry for entry in deltas if entry[0] >= 0]
-        negative_sorted = sorted(negative, key=lambda x: x[0])
+        negative_sorted = sorted(negative, key=lambda x: (x[0], x[2]))
         deltas = negative_sorted + non_negative
         # deltas.sort(key=lambda x: x[0])
         return deltas
