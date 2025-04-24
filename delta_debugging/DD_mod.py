@@ -170,7 +170,13 @@ class DDMods(DD):
     def __apply_prepend(self, deltas, prepend):
         prepend_chars = [(entry[0], entry[1]) for entry in prepend]
         deltas = prepend_chars + deltas
-        deltas.sort(key=lambda x: x[0])
+
+        # Sort prepend deltas by index (leave other deltas in original order)
+        negative = [entry for entry in deltas if entry[0] < 0]
+        non_negative = [entry for entry in deltas if entry[0] >= 0]
+        negative_sorted = sorted(negative, key=lambda x: x[0])
+        deltas = negative_sorted + non_negative
+        # deltas.sort(key=lambda x: x[0])
         return deltas
 
     def __apply_mods(self, deltas, mods):
