@@ -69,11 +69,11 @@ class DDMods(DD):
                     idx += 1
                 elif code == '+':
                     order = insert_orders.get(idx, 0)
-                    mods.append((idx, order, val.encode('latin1'), 'ADD'))
+                    mods.append((idx, val.encode('latin1'), order, 'ADD'))
                     insert_orders[idx] = order + 1
                 elif code == '-':
                     idx += 1
-                    mods.append((idx, 0, val.encode('latin1'), 'REMOVE'))
+                    mods.append((idx, val.encode('latin1'), 0, 'REMOVE'))
         else:
             diff = list(difflib.ndiff(string1, string2))
             mods = []
@@ -87,19 +87,19 @@ class DDMods(DD):
                     prepend = False
                 elif code == '+':  # Added character
                     order = insert_orders.get(idx, 0)
-                    mods.append((idx, order, char, self.ADD))
+                    mods.append((idx, char, order, self.ADD))
                     insert_orders[idx] = order + 1
                 # elif d.startswith("? "):  # Changed character
                 #     mods.append((idx, d[2], self.CHANGE))
                 elif code == '-':  # Removed character
                     idx += 1
-                    mods.append((idx, 0, char, self.REMOVE))
+                    mods.append((idx, char, 0, self.REMOVE))
 
         # * Modify prepend indices
         prepend = [mod for mod in mods if mod[0] < 0]
         plen = len(prepend)
-        prepend = [(-plen + i, 0, char, op)
-                   for i, (_, _, char, op) in enumerate(prepend)]
+        prepend = [(-plen + i, char, 0, op)
+                   for i, (_, char, _, op) in enumerate(prepend)]
         mods[:plen] = prepend
         return mods
 
@@ -127,11 +127,11 @@ class DDMods(DD):
         prepend = []
         inserted = []
         removed = []
-        for pos, order, char, op in mods:
+        for pos, char, order, op in mods:
             if pos < 0:
                 prepend.append((pos, char))  # Collect elements with index -1
             elif op == self.ADD:
-                inserted.append((pos, order, char))
+                inserted.append((pos, char, order))
             elif op == self.REMOVE:
                 removed.append((pos, char))
         return prepend, inserted, removed
