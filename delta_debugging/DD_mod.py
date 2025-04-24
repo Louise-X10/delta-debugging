@@ -336,10 +336,11 @@ class DDMods(DD):
             next_mods = c[:]
             next_n = n
 
-            # Check subsets
+            
             for j in range(n):
                 i = j % n
 
+                # Check subsets
                 if self.debug_dd:
                     # print("dd: trying", self.pretty(cs[i]))
                     print("dd: trying", self.pretty(self.__modsapply(c1, cs[i])))
@@ -366,20 +367,17 @@ class DDMods(DD):
                     # Not found
                     progress = 0
 
-            # Check complements
-            for j in range(n):
-                i = j % n
-
+                # Check complements
                 cbar = self.__modsminus(c, cs[i])
 
                 if self.debug_dd:
                     print("dd: trying", self.pretty(self.__modsapply(c1, cbar)))
 
-                (t, csub) = self.test_mods_and_resolve(
+                (tsub, csub) = self.test_mods_and_resolve(
                     c1, cbar, c2, self.REMOVE)
                 # csub = self.__listunion(c1, csub)
-
-                if t == self.FAIL:
+                
+                if tsub == self.FAIL:
                     # Found
                     progress = 1
                     # * Change lower bound to new failing test case
@@ -392,7 +390,7 @@ class DDMods(DD):
                         # print("dd: increase c1 to", len(next_c1), "deltas:",)
                         # print(self.pretty(next_mods))
                     break
-                elif t == self.PASS:
+                elif tsub == self.PASS:
                     # Not found
                     progress = 0
 
