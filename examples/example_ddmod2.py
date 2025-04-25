@@ -9,6 +9,7 @@ class TestDD(DDMods):
         DDMods.__init__(self)
         self.debug_dd = 0
         self.verbose = 0
+        self.binary = False
 
     def _test(self, deltas):
         print_text = 'Testing case {:11}: '.format(
